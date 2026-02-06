@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dashboard } from './components/Dashboard';
 import { ClientList } from './components/ClientList';
 import { ClientDetail } from './components/ClientDetail';
+import { AddClientForm } from './components/AddClientForm';
 import { Client, MortgageStatus } from './types';
-import { LayoutDashboard, Users, LogOut, Building2 } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, Building2, UserPlus, Bot, MessageCircle } from 'lucide-react';
 
-// --- MOCK DATA ---
+// --- MOCK DATA (Fallback) ---
 const mockClients: Client[] = [
   {
     id: '1001',
@@ -58,36 +59,32 @@ const mockClients: Client[] = [
     notes: 'פנייה חדשה מאתר האינטרנט.',
     documents: [],
     reminders: []
-  },
-  {
-    id: '1004',
-    firstName: 'מיכל',
-    lastName: 'אברהם',
-    phone: '053-3334444',
-    email: 'michal@example.com',
-    requestedAmount: 1100000,
-    status: MortgageStatus.REJECTED,
-    monthlyIncome: 9000,
-    creditScore: 540,
-    joinedDate: '2023-08-10',
-    notes: 'BDI שלילי. נדחה בשלב זה.',
-    documents: [
-       { id: 'd4', name: 'דוח נתוני אשראי', type: 'PDF', isSigned: false, uploadDate: '2023-08-12' },
-    ],
-    reminders: []
-  },
+  }
 ];
 
 enum View {
   DASHBOARD,
   CLIENTS,
-  CLIENT_DETAIL
+  CLIENT_DETAIL,
+  ADD_CLIENT
 }
 
 export default function App() {
   const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-  const [clients, setClients] = useState<Client[]>(mockClients);
+  
+  // Initialize clients from LocalStorage or use Mock Data
+  const [clients, setClients] = useState<Client[]>(() => {
+    const savedClients = localStorage.getItem('crm_clients');
+    return savedClients ? JSON.parse(savedClients) : mockClients;
+  });
+
+  const [notification, setNotification] = useState<string | null>(null);
+
+  // Save to LocalStorage whenever clients change
+  useEffect(() => {
+    localStorage.setItem('crm_clients', JSON.stringify(clients));
+  }, [clients]);
 
   const handleClientSelect = (client: Client) => {
     setSelectedClient(client);
@@ -97,6 +94,44 @@ export default function App() {
   const handleUpdateClient = (updatedClient: Client) => {
     setClients(prev => prev.map(c => c.id === updatedClient.id ? updatedClient : c));
     setSelectedClient(updatedClient);
+  };
+
+  const handleAddClient = (newClient: Client) => {
+    setClients(prev => [newClient, ...prev]);
+    setCurrentView(View.CLIENTS);
+    showNotification(`הלקוח ${newClient.firstName} נוסף בהצלחה!`);
+  };
+
+  // Simulate receiving a webhook from a WhatsApp bot
+  const simulateBotWebhook = () => {
+    const fakeNames = ['רונית', 'יוסי', 'עומר', 'דניאל', 'נועה'];
+    const fakeLastNames = ['חדד', 'אזולאי', 'פרידמן', 'גולן', 'ביטון'];
+    const randomName = fakeNames[Math.floor(Math.random() * fakeNames.length)];
+    const randomLastName = fakeLastNames[Math.floor(Math.random() * fakeLastNames.length)];
+    
+    const botClient: Client = {
+      id: Date.now().toString(),
+      firstName: randomName,
+      lastName: randomLastName,
+      phone: `05${Math.floor(Math.random() * 9)} - ${Math.floor(Math.random() * 8999999 + 1000000)}`,
+      email: 'lead@whatsapp-bot.com',
+      requestedAmount: Math.floor(Math.random() * 15) * 100000 + 500000,
+      monthlyIncome: Math.floor(Math.random() * 20000 + 8000),
+      creditScore: 0, // Needs checking
+      status: MortgageStatus.NEW,
+      joinedDate: new Date().toISOString().split('T')[0],
+      documents: [],
+      reminders: [],
+      notes: 'ליד אוטומטי שהתקבל דרך הבוט בוואטסאפ (Simulated)'
+    };
+
+    setClients(prev => [botClient, ...prev]);
+    showNotification(`🤖 ליד חדש התקבל מהבוט: ${randomName} ${randomLastName}`);
+  };
+
+  const showNotification = (msg: string) => {
+    setNotification(msg);
+    setTimeout(() => setNotification(null), 4000);
   };
 
   const renderContent = () => {
@@ -112,7 +147,9 @@ export default function App() {
             onBack={() => setCurrentView(View.CLIENTS)} 
             onUpdateClient={handleUpdateClient}
           />
-        ) : <Dashboard clients={clients} />; // Fallback
+        ) : <Dashboard clients={clients} />;
+      case View.ADD_CLIENT:
+        return <AddClientForm onSave={handleAddClient} onCancel={() => setCurrentView(View.CLIENTS)} />;
       default:
         return <Dashboard clients={clients} />;
     }
@@ -120,6 +157,17 @@ export default function App() {
 
   return (
     <div className="flex h-screen bg-slate-50 text-slate-800 font-sans" dir="rtl">
+      {/* Toast Notification */}
+      {notification && (
+        <div className="fixed top-6 left-6 z-50 bg-slate-800 text-white px-6 py-4 rounded-xl shadow-2xl animate-bounce-in flex items-center gap-3">
+          <MessageCircle className="text-green-400" />
+          <div>
+            <p className="font-semibold text-sm">עדכון מערכת</p>
+            <p className="text-sm opacity-90">{notification}</p>
+          </div>
+        </div>
+      )}
+
       {/* Sidebar */}
       <aside className="w-64 bg-white border-l border-slate-200 hidden md:flex flex-col z-10 shadow-lg">
         <div className="p-6 border-b border-slate-100 flex items-center gap-3">
@@ -141,10 +189,27 @@ export default function App() {
           />
           <SidebarItem 
             icon={<Users size={20} />} 
-            label="לקוחות ותיקים" 
+            label="ניהול לקוחות" 
             isActive={currentView === View.CLIENTS || currentView === View.CLIENT_DETAIL} 
             onClick={() => setCurrentView(View.CLIENTS)} 
           />
+          <SidebarItem 
+            icon={<UserPlus size={20} />} 
+            label="הוסף לקוח ידנית" 
+            isActive={currentView === View.ADD_CLIENT} 
+            onClick={() => setCurrentView(View.ADD_CLIENT)} 
+          />
+          
+          <div className="pt-6 mt-6 border-t border-slate-100">
+             <p className="text-xs font-semibold text-slate-400 px-3 mb-2">סימולציות ואינטגרציות</p>
+             <button 
+               onClick={simulateBotWebhook}
+               className="w-full flex items-center gap-3 p-3 rounded-xl text-green-600 hover:bg-green-50 transition-all duration-200"
+             >
+               <Bot size={20} />
+               <span>הדמיית ליד מהבוט</span>
+             </button>
+          </div>
         </nav>
 
         <div className="p-4 border-t border-slate-100">

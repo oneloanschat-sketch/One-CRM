@@ -135,7 +135,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients }) => {
                 מגמת גיוס לקוחות (חצי שנה אחרונה)
             </h3>
         </div>
-        <div className="h-64 w-full" dir="ltr">
+        {/* Added min-w-0 to prevent Recharts resize warning */}
+        <div className="h-64 w-full min-w-0" dir="ltr">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={trendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <defs>
@@ -166,7 +167,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients }) => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
           <h3 className="text-lg font-bold text-slate-800 mb-6">התפלגות סטטוס תיקים</h3>
-          <div className="h-80 w-full" dir="ltr">
+          {/* Added min-w-0 to prevent Recharts resize warning */}
+          <div className="h-80 w-full min-w-0" dir="ltr">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -191,7 +193,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients }) => {
 
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
           <h3 className="text-lg font-bold text-slate-800 mb-6">יחס הכנסה למשכנתא (מדגם לקוחות)</h3>
-          <div className="h-80 w-full" dir="ltr">
+          {/* Added min-w-0 to prevent Recharts resize warning */}
+          <div className="h-80 w-full min-w-0" dir="ltr">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={incomeVsLoanData}
