@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Client, MortgageStatus, Document, Reminder } from '../types';
-import { ArrowRight, FileText, Upload, CheckCircle, XCircle, Wand2, Phone, Mail, DollarSign, Calendar, Bell, Clock, Trash2, Plus, MessageSquare } from 'lucide-react';
+import { ArrowRight, FileText, Upload, CheckCircle, XCircle, Wand2, Phone, Mail, DollarSign, Calendar, Bell, Clock, Trash2, Plus, MessageSquare, AlertTriangle } from 'lucide-react';
 import { analyzeClientRisk } from '../services/geminiService';
 import { sendSms } from '../services/smsService';
 
@@ -8,6 +8,7 @@ interface ClientDetailProps {
   client: Client;
   onBack: () => void;
   onUpdateClient: (updatedClient: Client) => void;
+  onDeleteClient: (id: string) => void;
 }
 
 interface Notification {
@@ -15,7 +16,7 @@ interface Notification {
   type: 'success' | 'error';
 }
 
-export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUpdateClient }) => {
+export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUpdateClient, onDeleteClient }) => {
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [isLoadingAi, setIsLoadingAi] = useState(false);
   const [activeTab, setActiveTab] = useState<'details' | 'documents' | 'reminders'>('details');
@@ -49,6 +50,11 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
 
   const changeStatus = (newStatus: MortgageStatus) => {
     onUpdateClient({ ...client, status: newStatus });
+  };
+
+  const handleDeleteClient = () => {
+      // Directly call prop, App.tsx now handles confirmation modal
+      onDeleteClient(client.id);
   };
 
   const handleDocumentSms = async (doc: Document) => {
@@ -158,13 +164,23 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
         </div>
       )}
 
-      <button 
-        onClick={onBack} 
-        className="flex items-center text-slate-500 hover:text-blue-600 mb-6 transition-colors w-fit"
-      >
-        <ArrowRight size={18} className="ml-2" />
-        חזרה לרשימת הלקוחות
-      </button>
+      <div className="flex justify-between items-center mb-6">
+        <button 
+            onClick={onBack} 
+            className="flex items-center text-slate-500 hover:text-blue-600 transition-colors w-fit"
+        >
+            <ArrowRight size={18} className="ml-2" />
+            חזרה לרשימת הלקוחות
+        </button>
+
+        <button 
+            onClick={handleDeleteClient}
+            className="flex items-center gap-2 text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors text-sm font-medium"
+        >
+            <Trash2 size={16} />
+            מחק תיק לקוח
+        </button>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Side: Main Info */}

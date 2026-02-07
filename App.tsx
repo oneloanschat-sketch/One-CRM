@@ -4,8 +4,9 @@ import { ClientList } from './components/ClientList';
 import { ClientDetail } from './components/ClientDetail';
 import { AddClientForm } from './components/AddClientForm';
 import { IntegrationSettings } from './components/IntegrationSettings';
-import { Client, MortgageStatus } from './types';
-import { LayoutDashboard, Users, LogOut, UserPlus, Bot, MessageCircle, Download, Settings, Loader2, Wifi, WifiOff } from 'lucide-react';
+import { NotificationCenter } from './components/NotificationCenter';
+import { Client, MortgageStatus, SystemNotification } from './types';
+import { LayoutDashboard, Users, LogOut, UserPlus, Bot, MessageCircle, Download, Settings, Loader2, Wifi, WifiOff, Menu, X, AlertTriangle } from 'lucide-react';
 
 // --- Fallback Data (For Offline Mode) ---
 const FALLBACK_CLIENTS: Client[] = [
@@ -92,30 +93,79 @@ export default function App() {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
   const [isOfflineMode, setIsOfflineMode] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
+  // Notification System State
+  const [notifications, setNotifications] = useState<SystemNotification[]>([]);
+  
+  // Delete Modal State
+  const [clientToDeleteId, setClientToDeleteId] = useState<string | null>(null);
+
   const [clients, setClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Helper to add notification
+  const addSystemNotification = (title: string, message: string, clientId?: string) => {
+      const newNotif: SystemNotification = {
+          id: Date.now().toString(),
+          title,
+          message,
+          timestamp: new Date().toISOString(),
+          isRead: false,
+          type: 'LEAD',
+          clientId
+      };
+      setNotifications(prev => [newNotif, ...prev]);
+  };
+
+  const markNotificationAsRead = (id: string) => {
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+  };
+
+  const clearAllNotifications = () => {
+      setNotifications([]);
+  };
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
   // --- API Functions ---
-  const fetchClients = async () => {
+  const fetchClients = async (silent = false) => {
     try {
-      // Try to fetch from server
       const response = await fetch('/api/clients');
       if (response.ok) {
-        const data = await response.json();
+        const data: Client[] = await response.json();
+        
+        // Smart Lead Detection
+        if (silent && data.length > clients.length && clients.length > 0) {
+            const newCount = data.length - clients.length;
+            // Assuming new clients are added to the beginning (unshift on server)
+            const newLeads = data.slice(0, newCount);
+            
+            newLeads.forEach(lead => {
+                addSystemNotification(
+                    'ליד חדש התקבל',
+                    `${lead.firstName} ${lead.lastName} השאיר פרטים. טלפון: ${lead.phone}`,
+                    lead.id
+                );
+            });
+            
+            showNotification(`🔔 התקבלו ${newCount} לידים חדשים!`);
+        }
+
         setClients(data);
         setIsOfflineMode(false);
       } else {
         throw new Error('Server error');
       }
     } catch (error) {
-      console.warn('Backend unavailable, switching to Offline Mode');
-      // If server fails, use fallback data
-      setClients(FALLBACK_CLIENTS);
-      setIsOfflineMode(true);
-      showNotification('מצב הדגמה (Offline): הנתונים נטענו מקומית');
+      if (!silent) {
+          console.warn('Backend unavailable, switching to Offline Mode');
+          setClients(FALLBACK_CLIENTS);
+          setIsOfflineMode(true);
+          showNotification('מצב הדגמה (Offline): הנתונים נטענו מקומית');
+      }
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
   };
 
@@ -124,7 +174,19 @@ export default function App() {
     fetchClients();
   }, []);
 
-  // --- URL Query Param Listener (For "Magic Link" from Bot) ---
+  // --- POLLING FOR NEW LEADS (Every 30s) ---
+  useEffect(() => {
+    if (isOfflineMode) return;
+    
+    const intervalId = setInterval(() => {
+        // Silent fetch to check updates
+        fetchClients(true);
+    }, 30000); 
+
+    return () => clearInterval(intervalId);
+  }, [isOfflineMode, clients]); // Use 'clients' dependency to compare lengths inside fetchClients
+
+  // --- URL Query Param Listener ---
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('action') === 'add') {
@@ -159,10 +221,26 @@ export default function App() {
   const handleClientSelect = (client: Client) => {
     setSelectedClient(client);
     setCurrentView(View.CLIENT_DETAIL);
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleNotificationClick = (clientId?: string) => {
+      if (clientId) {
+          const client = clients.find(c => c.id === clientId);
+          if (client) {
+              handleClientSelect(client);
+          }
+      } else {
+          setCurrentView(View.CLIENTS);
+      }
+  };
+
+  const handleNavigation = (view: View) => {
+    setCurrentView(view);
+    setIsMobileMenuOpen(false);
   };
 
   const handleUpdateClient = async (updatedClient: Client) => {
-    // Optimistic update (update UI immediately)
     setClients(prev => prev.map(c => c.id === updatedClient.id ? updatedClient : c));
     setSelectedClient(updatedClient);
 
@@ -180,10 +258,48 @@ export default function App() {
     }
   };
 
+  // Step 1: Request Delete (Opens Modal)
+  const handleDeleteRequest = (clientId: string) => {
+      setClientToDeleteId(clientId);
+  };
+
+  // Step 2: Confirm Delete (Executes Action)
+  const executeDeleteClient = async () => {
+    if (!clientToDeleteId) return;
+
+    const clientId = clientToDeleteId;
+    const clientToDelete = clients.find(c => c.id === clientId);
+    
+    // Optimistic delete
+    setClients(prev => prev.filter(c => c.id !== clientId));
+
+    // If we are viewing the deleted client, go back to list
+    if (selectedClient && selectedClient.id === clientId) {
+        setSelectedClient(null);
+        setCurrentView(View.CLIENTS);
+    }
+
+    setClientToDeleteId(null); // Close modal
+    showNotification(`הלקוח ${clientToDelete?.firstName || ''} נמחק בהצלחה`);
+
+    if (!isOfflineMode) {
+        try {
+            await fetch(`/api/clients/${clientId}`, {
+                method: 'DELETE'
+            });
+        } catch (error) {
+            console.error('Delete failed, working locally');
+            setIsOfflineMode(true);
+        }
+    }
+  };
+
   const handleAddClient = async (newClient: Client, fromLink = false) => {
-    // Optimistic update
     setClients(prev => [newClient, ...prev]);
+    
     if (fromLink) {
+        // Notification is added via fetch logic if persistent, but here it's immediate
+        addSystemNotification('ליד חדש (קישור)', `נקלט לקוח: ${newClient.firstName} ${newClient.lastName}`, newClient.id);
         showNotification(`✅ נקלט ליד חדש: ${newClient.firstName} ${newClient.lastName}`);
         setCurrentView(View.CLIENTS);
     } else {
@@ -205,27 +321,39 @@ export default function App() {
     }
   };
 
-  // Simulate calling the real Webhook
-  const simulateBotWebhook = async () => {
-    const fakeNames = ['רונית', 'יוסי', 'עומר', 'דניאל', 'נועה'];
-    const fakeLastNames = ['חדד', 'אזולאי', 'פרידמן', 'גולן', 'ביטון'];
-    const randomName = fakeNames[Math.floor(Math.random() * fakeNames.length)];
-    const randomLastName = fakeLastNames[Math.floor(Math.random() * fakeLastNames.length)];
-    
-    const payload = {
-        firstName: randomName,
-        lastName: randomLastName,
-        phone: `05${Math.floor(Math.random() * 9)}-${Math.floor(Math.random() * 8999999 + 1000000)}`,
-        email: 'lead@whatsapp-bot.com',
-        requestedAmount: Math.floor(Math.random() * 15) * 100000 + 500000,
-        source: 'whatsapp_bot_simulation'
-    };
+  const simulateBotWebhook = async (customData?: any) => {
+    let payload;
 
-    console.log('Simulating webhook...');
+    if (customData) {
+        payload = {
+            firstName: customData.firstName,
+            lastName: customData.lastName,
+            phone: customData.phone,
+            email: customData.email || 'manual@test.com',
+            requestedAmount: Number(customData.amount),
+            source: 'manual_dashboard_simulation',
+            notes: 'בדיקה ידנית מהמערכת'
+        };
+    } else {
+        const fakeNames = ['רונית', 'יוסי', 'עומר', 'דניאל', 'נועה'];
+        const fakeLastNames = ['חדד', 'אזולאי', 'פרידמן', 'גולן', 'ביטון'];
+        const randomName = fakeNames[Math.floor(Math.random() * fakeNames.length)];
+        const randomLastName = fakeLastNames[Math.floor(Math.random() * fakeLastNames.length)];
+        
+        payload = {
+            firstName: randomName,
+            lastName: randomLastName,
+            phone: `05${Math.floor(Math.random() * 9)}-${Math.floor(Math.random() * 8999999 + 1000000)}`,
+            email: 'lead@whatsapp-bot.com',
+            requestedAmount: Math.floor(Math.random() * 15) * 100000 + 500000,
+            source: 'whatsapp_bot_simulation'
+        };
+    }
+
+    console.log('Simulating webhook...', payload);
 
     let success = false;
     
-    // Attempt real server call first
     if (!isOfflineMode) {
         try {
             const res = await fetch('/api/webhook', {
@@ -235,15 +363,14 @@ export default function App() {
             });
             if (res.ok) {
                 success = true;
-                showNotification(`🤖 הבוט שלח ליד: ${randomName} ${randomLastName}`);
-                fetchClients(); // Refresh from server
+                showNotification(customData ? `✅ נשלח בהצלחה!` : `🤖 הבוט שלח ליד!`);
+                fetchClients(true); // Silent fetch to trigger notification logic
             }
         } catch (e) {
             console.warn('Webhook server unreachable');
         }
     }
 
-    // Fallback if server failed or we are in offline mode
     if (!success) {
         const newClient: Client = {
             id: Date.now().toString(),
@@ -258,11 +385,12 @@ export default function App() {
             joinedDate: new Date().toISOString().split('T')[0],
             documents: [],
             reminders: [],
-            notes: 'ליד נקלט בסימולציה (מצב מקומי)'
+            notes: payload.notes || 'ליד נקלט בסימולציה (מצב מקומי)'
         };
         
         setClients(prev => [newClient, ...prev]);
-        showNotification(`🤖 (מקומי) הבוט יצר ליד: ${randomName} ${randomLastName}`);
+        addSystemNotification('ליד חדש (סימולציה)', `${payload.firstName} נקלט בהצלחה במערכת`, newClient.id);
+        showNotification(`🤖 (מקומי) ליד נוצר: ${payload.firstName} ${payload.lastName}`);
     }
   };
 
@@ -298,13 +426,20 @@ export default function App() {
       case View.DASHBOARD:
         return <Dashboard clients={clients} onClientSelect={handleClientSelect} />;
       case View.CLIENTS:
-        return <ClientList clients={clients} onSelectClient={handleClientSelect} />;
+        return (
+            <ClientList 
+                clients={clients} 
+                onSelectClient={handleClientSelect} 
+                onDeleteClient={handleDeleteRequest}
+            />
+        );
       case View.CLIENT_DETAIL:
         return selectedClient ? (
           <ClientDetail 
             client={selectedClient} 
             onBack={() => setCurrentView(View.CLIENTS)} 
             onUpdateClient={handleUpdateClient}
+            onDeleteClient={handleDeleteRequest}
           />
         ) : <Dashboard clients={clients} onClientSelect={handleClientSelect} />;
       case View.ADD_CLIENT:
@@ -317,11 +452,11 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 text-slate-800 font-sans" dir="rtl">
+    <div className="flex h-screen bg-slate-50 text-slate-800 font-sans overflow-hidden" dir="rtl">
       {/* Toast Notification */}
       {notification && (
-        <div className="fixed top-6 left-6 z-50 bg-slate-800 text-white px-6 py-4 rounded-xl shadow-2xl animate-bounce-in flex items-center gap-3">
-          <MessageCircle className="text-green-400" />
+        <div className="fixed top-6 left-6 z-[70] bg-slate-800 text-white px-6 py-4 rounded-xl shadow-2xl animate-bounce-in flex items-center gap-3 max-w-[90vw] cursor-pointer" onClick={() => setNotification(null)}>
+          <MessageCircle className="text-green-400 shrink-0" />
           <div>
             <p className="font-semibold text-sm">עדכון מערכת</p>
             <p className="text-sm opacity-90">{notification}</p>
@@ -329,52 +464,106 @@ export default function App() {
         </div>
       )}
 
+      {/* Delete Confirmation Modal */}
+      {clientToDeleteId && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+                <div className="bg-red-50 p-6 flex flex-col items-center text-center">
+                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                        <AlertTriangle className="text-red-500" size={32} />
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-800 mb-2">מחיקת לקוח</h3>
+                    <p className="text-slate-500 text-sm">
+                        האם אתה בטוח שברצונך למחוק את הלקוח?
+                        <br/>
+                        פעולה זו אינה הפיכה והמידע יאבד.
+                    </p>
+                </div>
+                <div className="p-4 flex gap-3 bg-white">
+                    <button 
+                        onClick={() => setClientToDeleteId(null)}
+                        className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors"
+                    >
+                        ביטול
+                    </button>
+                    <button 
+                        onClick={executeDeleteClient}
+                        className="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-medium hover:bg-red-600 shadow-lg shadow-red-200 transition-colors"
+                    >
+                        כן, מחק
+                    </button>
+                </div>
+             </div>
+          </div>
+      )}
+
+      {/* Mobile Menu Backdrop */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 z-20 md:hidden backdrop-blur-sm transition-opacity"
+          onClick={() => setIsMobileMenuOpen(false)}
+        ></div>
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-l border-slate-200 hidden md:flex flex-col z-10 shadow-lg">
-        <div className="p-6 border-b border-slate-100 flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center text-white shadow-blue-200 shadow-lg transform rotate-3 transition-transform hover:rotate-0 group shrink-0">
-            <span className="font-black text-3xl italic pr-1 font-serif group-hover:scale-110 transition-transform">1</span>
+      <aside 
+        className={`fixed inset-y-0 right-0 z-30 w-64 bg-white border-l border-slate-200 flex flex-col shadow-2xl transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:shadow-lg ${
+          isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center text-white shadow-blue-200 shadow-lg transform rotate-3 transition-transform hover:rotate-0 group shrink-0">
+                <span className="font-black text-2xl italic pr-1 font-serif group-hover:scale-110 transition-transform">1</span>
+            </div>
+            <div className="flex flex-col">
+                <h1 className="font-bold text-lg leading-tight text-slate-800">
+                <span className="text-blue-600">וואן</span> משכנתאות
+                </h1>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <h1 className="font-bold text-xl leading-tight text-slate-800">
-              <span className="text-blue-600">וואן</span> משכנתאות
-            </h1>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider bg-slate-100 px-1.5 py-0.5 rounded-full w-fit mt-1">
-              מספר 1 בפיננסים
-            </p>
-          </div>
+          {/* Close Button Mobile */}
+          <button 
+            className="md:hidden text-slate-400 hover:text-slate-600 p-1"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <X size={24} />
+          </button>
         </div>
 
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           <SidebarItem 
             icon={<LayoutDashboard size={20} />} 
             label="דשבורד ראשי" 
             isActive={currentView === View.DASHBOARD} 
-            onClick={() => setCurrentView(View.DASHBOARD)} 
+            onClick={() => handleNavigation(View.DASHBOARD)} 
           />
           <SidebarItem 
             icon={<Users size={20} />} 
             label="ניהול לקוחות" 
             isActive={currentView === View.CLIENTS || currentView === View.CLIENT_DETAIL} 
-            onClick={() => setCurrentView(View.CLIENTS)} 
+            onClick={() => handleNavigation(View.CLIENTS)} 
           />
           <SidebarItem 
             icon={<UserPlus size={20} />} 
             label="הוסף לקוח ידנית" 
             isActive={currentView === View.ADD_CLIENT} 
-            onClick={() => setCurrentView(View.ADD_CLIENT)} 
+            onClick={() => handleNavigation(View.ADD_CLIENT)} 
           />
           <SidebarItem 
             icon={<Settings size={20} />} 
             label="הגדרות וחיבורים" 
             isActive={currentView === View.SETTINGS} 
-            onClick={() => setCurrentView(View.SETTINGS)} 
+            onClick={() => handleNavigation(View.SETTINGS)} 
           />
           
           <div className="pt-6 mt-6 border-t border-slate-100">
              <p className="text-xs font-semibold text-slate-400 px-3 mb-2">סימולציות ואינטגרציות</p>
              <button 
-               onClick={simulateBotWebhook}
+               onClick={() => {
+                   simulateBotWebhook();
+                   if (window.innerWidth < 768) setIsMobileMenuOpen(false);
+               }}
                className="w-full flex items-center gap-3 p-3 rounded-xl text-green-600 hover:bg-green-50 transition-all duration-200"
              >
                <Bot size={20} />
@@ -383,10 +572,10 @@ export default function App() {
           </div>
         </nav>
 
-        <div className="p-4 border-t border-slate-100 space-y-2">
+        <div className="p-4 border-t border-slate-100 space-y-2 bg-slate-50/50">
            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${isOfflineMode ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>
               {isOfflineMode ? <WifiOff size={14} /> : <Wifi size={14} />}
-              {isOfflineMode ? 'מצב לא מקוון (Offline)' : 'מחובר לשרת בענן'}
+              {isOfflineMode ? 'מצב לא מקוון' : 'מחובר לשרת'}
            </div>
 
            <button 
@@ -396,32 +585,56 @@ export default function App() {
              <Download size={18} />
              <span className="text-sm font-medium">שמור/ייצא נתונים</span>
            </button>
-           
-           <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer text-slate-600">
-             <LogOut size={18} />
-             <span className="text-sm font-medium">התנתק</span>
-           </div>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto">
-        <header className="bg-white border-b border-slate-200 p-4 md:hidden flex items-center justify-between sticky top-0 z-20">
-             <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg flex items-center justify-center text-white shadow-md">
+      <main className="flex-1 flex flex-col h-full overflow-hidden relative bg-slate-50">
+        
+        {/* Universal Header (Mobile & Desktop) */}
+        <header className="bg-white border-b border-slate-200 p-4 flex items-center justify-between shrink-0 z-20 shadow-sm">
+             <div className="flex items-center gap-3 md:hidden">
+                <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg flex items-center justify-center text-white shadow-md">
                     <span className="font-black text-xl italic pr-0.5 font-serif">1</span>
                 </div>
                 <div>
-                   <div className="font-bold text-blue-900 text-lg leading-none">וואן משכנתאות</div>
-                   <div className="text-[10px] text-slate-500 font-bold">מספר 1 בפיננסים</div>
+                   <div className="font-bold text-blue-900 text-base leading-none">וואן משכנתאות</div>
                 </div>
              </div>
-             <button className="p-2 bg-slate-100 rounded-md" onClick={() => setCurrentView(View.DASHBOARD)}>
-               <LayoutDashboard size={20}/>
-             </button>
+             
+             {/* Desktop Title / Breadcrumb (Visible on MD+) */}
+             <div className="hidden md:block">
+                <h2 className="text-lg font-bold text-slate-800">
+                    {currentView === View.DASHBOARD && 'סקירת מצב כללית'}
+                    {currentView === View.CLIENTS && 'רשימת לקוחות'}
+                    {currentView === View.CLIENT_DETAIL && 'תיק לקוח'}
+                    {currentView === View.ADD_CLIENT && 'הקמת לקוח'}
+                    {currentView === View.SETTINGS && 'הגדרות מערכת'}
+                </h2>
+             </div>
+
+             <div className="flex items-center gap-3">
+                <NotificationCenter 
+                    notifications={notifications}
+                    unreadCount={unreadCount}
+                    onMarkAsRead={markNotificationAsRead}
+                    onClearAll={clearAllNotifications}
+                    onNotificationClick={handleNotificationClick}
+                />
+                <button 
+                    className="p-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition-colors md:hidden" 
+                    onClick={() => setIsMobileMenuOpen(true)}
+                >
+                    <Menu size={24}/>
+                </button>
+             </div>
         </header>
-        <div className="max-w-7xl mx-auto">
-           {renderContent()}
+
+        {/* Scrollable View Area */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden bg-slate-50 scroll-smooth">
+           <div className="max-w-7xl mx-auto w-full">
+               {renderContent()}
+           </div>
         </div>
       </main>
     </div>

@@ -38,6 +38,7 @@ export const AddClientForm: React.FC<AddClientFormProps> = ({ onSave, onCancel }
       status: MortgageStatus.NEW,
       creditScore: 700, // Default starting score
       joinedDate: new Date().toISOString().split('T')[0],
+      createdAt: new Date().toISOString(), // Track precise creation time
       documents: [],
       reminders: [],
       notes: formData.notes
@@ -87,7 +88,8 @@ export const AddClientForm: React.FC<AddClientFormProps> = ({ onSave, onCancel }
               required
               type="tel"
               placeholder="050-0000000"
-              className={inputClasses}
+              className={`${inputClasses} text-right`}
+              dir="ltr" 
               value={formData.phone}
               onChange={e => setFormData({...formData, phone: e.target.value})}
             />

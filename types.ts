@@ -33,7 +33,8 @@ export interface Client {
   documents: Document[];
   reminders: Reminder[];
   notes: string;
-  joinedDate: string;
+  joinedDate: string; // YYYY-MM-DD for display
+  createdAt?: string; // ISO Timestamp for precise calculation
   monthlyIncome: number;
   creditScore: number;
 }
@@ -43,4 +44,14 @@ export interface KpiData {
   activeProcesses: number;
   conversionRate: number;
   totalVolume: number;
+}
+
+export interface SystemNotification {
+  id: string;
+  title: string;
+  message: string;
+  timestamp: string; // ISO date or time string
+  isRead: boolean;
+  type: 'LEAD' | 'SYSTEM' | 'ALERT';
+  clientId?: string; // Optional link to a client
 }

@@ -4,8 +4,41 @@ import {
   PieChart, Pie, Cell, Legend, AreaChart, Area, Label
 } from 'recharts';
 import { Client, MortgageStatus } from '../types';
-import { Users, FileCheck, TrendingUp, AlertCircle, CreditCard, Percent, Activity } from 'lucide-react';
+import { Users, FileCheck, TrendingUp, AlertCircle, Percent, Activity, BarChart3, Clock } from 'lucide-react';
 import { KpiDrillDownModal } from './KpiDrillDownModal';
+
+interface KpiCardProps {
+  title: string;
+  value: string;
+  trend: string;
+  trendColor?: string;
+  icon: React.ReactNode;
+  bgColor: string;
+  textColor: string;
+  onClick: () => void;
+}
+
+const KpiCard: React.FC<KpiCardProps> = ({ title, value, trend, trendColor, icon, bgColor, textColor, onClick }) => (
+  <div 
+    onClick={onClick}
+    className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all cursor-pointer group"
+  >
+    <div className="flex justify-between items-start mb-4">
+      <div className={`p-3 rounded-xl ${bgColor} group-hover:scale-110 transition-transform`}>
+        {icon}
+      </div>
+      {trend && (
+        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${trendColor || 'bg-slate-100 text-slate-500'}`}>
+          {trend}
+        </span>
+      )}
+    </div>
+    <div className="space-y-1">
+      <h3 className="text-slate-500 text-sm font-medium">{title}</h3>
+      <p className={`text-2xl font-bold ${textColor}`}>{value}</p>
+    </div>
+  </div>
+);
 
 interface DashboardProps {
   clients: Client[];
@@ -14,7 +47,7 @@ interface DashboardProps {
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
-type KpiType = 'TOTAL' | 'ACTIVE' | 'VOLUME' | 'DOCS' | 'CREDIT' | 'RATES' | null;
+type KpiType = 'TOTAL' | 'ACTIVE' | 'VOLUME' | 'DOCS' | 'WAIT_TIME' | 'RATES' | null;
 
 export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect }) => {
   const [selectedKpi, setSelectedKpi] = useState<KpiType>(null);
@@ -29,9 +62,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
 
   const pendingDocs = clients.reduce((acc, c) => acc + c.documents.filter(d => !d.isSigned).length, 0);
 
-  const avgCreditScore = clients.length > 0
-    ? Math.round(clients.reduce((acc, c) => acc + c.creditScore, 0) / clients.length)
-    : 0;
+  // --- New KPI: Average Wait Time for NEW leads ---
+  const newLeads = clients.filter(c => c.status === MortgageStatus.NEW);
+  const totalHoursWaiting = newLeads.reduce((acc, c) => {
+     // Use createdAt if available, otherwise fallback to joinedDate (midnight)
+     const createdTime = c.createdAt ? new Date(c.createdAt).getTime() : new Date(c.joinedDate).getTime();
+     const now = Date.now();
+     const diffHours = (now - createdTime) / (1000 * 60 * 60);
+     return acc + diffHours;
+  }, 0);
+  
+  const avgWaitTime = newLeads.length > 0 ? (totalHoursWaiting / newLeads.length) : 0;
+  const formattedWaitTime = avgWaitTime < 1 
+      ? `${(avgWaitTime * 60).toFixed(0)} דק'` 
+      : `${avgWaitTime.toFixed(1)} שעות`;
+
+  // Color logic: If waiting > 2 hours, it's RED.
+  const isWaitTimeCritical = avgWaitTime > 2;
 
   const decidedClients = clients.filter(c => c.status === MortgageStatus.APPROVED || c.status === MortgageStatus.REJECTED).length;
   const approvalRate = decidedClients > 0
@@ -60,7 +107,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
       }
     });
 
-    // Fill in at least some data if empty to show the graph structure or ensure specific months exist
     if (monthsMap.size === 0) {
         return [
             { month: 'ינואר', leads: 0 },
@@ -78,14 +124,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
     value: clients.filter(c => c.status === status).length
   })).filter(item => item.value > 0);
 
-  // 3. Bar Chart Data
-  const incomeVsLoanData = clients.slice(0, 7).map(c => ({
-    name: c.firstName + ' ' + c.lastName,
-    fullName: c.firstName + ' ' + c.lastName, // For tooltip
-    clientId: c.id, // For click handler
-    הכנסה: c.monthlyIncome,
-    משכנתא: c.requestedAmount / 100 // Scaled down for visualization
-  }));
+  // 3. Financial Pipeline (Volume by Status) - REPLACED CHART
+  const pipelineData = Object.values(MortgageStatus).map(status => {
+    const totalAmount = clients
+        .filter(c => c.status === status)
+        .reduce((sum, c) => sum + c.requestedAmount, 0);
+    
+    return {
+        name: status,
+        amount: totalAmount / 1000000, // Convert to Millions
+        fullAmount: totalAmount,
+        count: clients.filter(c => c.status === status).length
+    };
+  });
 
   // --- Handlers ---
 
@@ -110,8 +161,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
   };
 
   const handlePieChartClick = (data: any) => {
-      // Recharts passes the clicked cell data differently depending on version, 
-      // sometimes directly or via event. We check 'name' or 'payload.name'.
       const statusName = data?.name || data?.payload?.name;
       if (statusName) {
           const relevantClients = clients.filter(c => c.status === statusName);
@@ -123,26 +172,36 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
       }
   };
 
-  const handleBarChartClick = (data: any) => {
-      if (data && data.activePayload && data.activePayload.length > 0) {
-          const payload = data.activePayload[0].payload;
-          const client = clients.find(c => c.id === payload.clientId);
-          if (client) {
-              onClientSelect(client);
-          }
-      }
+  const handlePipelineClick = (data: any) => {
+    // When clicking a Bar, 'data' is the data entry for that bar
+    if (data && data.name) {
+        const statusName = data.name;
+        const relevantClients = clients.filter(c => c.status === statusName);
+        
+        if (relevantClients.length > 0) {
+            setCustomDrillDown({
+                title: `צנרת פיננסית - ${statusName}`,
+                data: relevantClients,
+                type: 'VOLUME'
+            });
+        }
+    }
   };
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-4 border border-slate-100 shadow-xl rounded-xl text-right dir-rtl">
+        <div className="bg-white p-4 border border-slate-100 shadow-xl rounded-xl text-right dir-rtl z-50">
           <p className="font-bold text-slate-800 mb-2">{label}</p>
           {payload.map((entry: any, index: number) => (
             <div key={index} className="flex items-center gap-2 text-sm mb-1">
               <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }}></div>
               <span className="text-slate-500">{entry.name}:</span>
-              <span className="font-semibold text-slate-700">{entry.value.toLocaleString()}</span>
+              <span className="font-semibold text-slate-700">
+                {entry.dataKey === 'amount' 
+                    ? `₪${entry.value.toFixed(2)}M` 
+                    : entry.value.toLocaleString()}
+              </span>
             </div>
           ))}
         </div>
@@ -151,7 +210,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
     return null;
   };
 
-  // Helper to filter clients for the modal based on selected KPI
   const getModalData = () => {
     if (customDrillDown) return customDrillDown;
 
@@ -176,11 +234,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
                 data: clients.filter(c => c.documents.some(d => !d.isSigned)),
                 type: 'DOCS' as const
             };
-        case 'CREDIT':
+        case 'WAIT_TIME':
+            // Sort NEW leads by who is waiting the longest
             return { 
-                title: 'דירוג אשראי לקוחות', 
-                data: [...clients].sort((a, b) => b.creditScore - a.creditScore),
-                type: 'CREDIT' as const
+                title: 'לידים חדשים ממתינים לטיפול', 
+                data: [...newLeads].sort((a, b) => {
+                     const timeA = a.createdAt ? new Date(a.createdAt).getTime() : new Date(a.joinedDate).getTime();
+                     const timeB = b.createdAt ? new Date(b.createdAt).getTime() : new Date(b.joinedDate).getTime();
+                     return timeA - timeB; // Oldest first
+                }),
+                type: 'WAIT_TIME' as const
             };
         case 'RATES':
             return { 
@@ -197,7 +260,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
   const showModal = selectedKpi !== null || customDrillDown !== null;
 
   return (
-    <div className="p-6 space-y-8 animate-fade-in pb-20 relative">
+    <div className="p-4 md:p-6 space-y-8 animate-fade-in pb-20 relative">
       
       {/* Modal Drill Down */}
       {showModal && (
@@ -214,7 +277,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
       )}
 
       {/* KPI Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         <KpiCard
           title="סה״כ לקוחות"
           value={totalClients.toString()}
@@ -252,14 +315,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
           textColor="text-orange-600"
           onClick={() => setSelectedKpi('DOCS')}
         />
+        {/* NEW KPI: Average Wait Time */}
         <KpiCard
-          title="דירוג אשראי ממוצע"
-          value={avgCreditScore.toString()}
-          trend="איכות תיק"
-          icon={<CreditCard className="text-indigo-600" size={24} />}
-          bgColor="bg-indigo-50"
-          textColor="text-indigo-600"
-          onClick={() => setSelectedKpi('CREDIT')}
+          title="זמן המתנה ממוצע (ליד חדש)"
+          value={formattedWaitTime}
+          trend={isWaitTimeCritical ? 'חריגה ביעד' : 'תקין'}
+          trendColor={isWaitTimeCritical ? 'text-red-600 bg-red-100' : 'text-green-600 bg-green-50'}
+          icon={<Clock className={isWaitTimeCritical ? 'text-red-600' : 'text-indigo-600'} size={24} />}
+          bgColor={isWaitTimeCritical ? 'bg-red-50' : 'bg-indigo-50'}
+          textColor={isWaitTimeCritical ? 'text-red-600' : 'text-indigo-600'}
+          onClick={() => setSelectedKpi('WAIT_TIME')}
         />
         <KpiCard
           title="אחוז אישורים"
@@ -273,14 +338,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
       </div>
 
       {/* Main Trend Chart */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 cursor-pointer transition-shadow hover:shadow-md">
+      <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100 cursor-pointer transition-shadow hover:shadow-md">
         <div className="flex justify-between items-center mb-6">
             <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                 <Activity size={20} className="text-blue-500" />
                 מגמת גיוס לקוחות (לפי חודשי הצטרפות)
             </h3>
         </div>
-        {/* Added min-w-0 to prevent Recharts resize warning */}
         <div className="h-64 w-full min-w-0" dir="ltr">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart 
@@ -315,9 +379,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
 
       {/* Secondary Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100">
           <h3 className="text-lg font-bold text-slate-800 mb-6">התפלגות סטטוס תיקים</h3>
-          {/* Added min-w-0 to prevent Recharts resize warning */}
           <div className="h-80 w-full min-w-0" dir="ltr">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -338,7 +401,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} className="hover:opacity-80 transition-opacity" />
                   ))}
                   
-                  {/* Total in Center */}
                   <Label 
                     value={totalClients} 
                     position="center" 
@@ -358,25 +420,42 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-          <h3 className="text-lg font-bold text-slate-800 mb-6">יחס הכנסה למשכנתא (מדגם לקוחות)</h3>
-          {/* Added min-w-0 to prevent Recharts resize warning */}
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100">
+          <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+             <BarChart3 size={20} className="text-purple-600"/>
+             נפח תיקים כספי לפי סטטוס
+          </h3>
           <div className="h-80 w-full min-w-0" dir="ltr">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={incomeVsLoanData}
-                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                barSize={20}
-                onClick={handleBarChartClick}
+                data={pipelineData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+                barSize={30}
                 className="cursor-pointer"
               >
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 11}} interval={0} />
+                <XAxis 
+                    dataKey="name" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{fontSize: 12, fontWeight: 500}} 
+                    interval={0} 
+                />
                 <YAxis axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                <Legend iconType="circle" />
-                <Bar dataKey="הכנסה" fill="#818cf8" name="הכנסה חודשית" radius={[4, 4, 0, 0]} className="hover:opacity-80" />
-                <Bar dataKey="משכנתא" fill="#34d399" name="משכנתא (באלפים / 100)" radius={[4, 4, 0, 0]} className="hover:opacity-80" />
+                <Legend iconType="circle" verticalAlign="top" height={36}/>
+                <Bar 
+                    dataKey="amount" 
+                    fill="#8b5cf6" 
+                    name="סכום (במיליוני ₪)" 
+                    radius={[6, 6, 0, 0]} 
+                    className="hover:opacity-80 cursor-pointer"
+                    onClick={handlePipelineClick}
+                >
+                    {pipelineData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} cursor="pointer" />
+                    ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -385,25 +464,3 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
     </div>
   );
 };
-
-const KpiCard = ({ title, value, trend, trendColor = 'text-green-600 bg-green-50', icon, bgColor, textColor, onClick }: any) => (
-  <div 
-    onClick={onClick}
-    className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-lg hover:border-blue-100 transition-all duration-300 hover:-translate-y-1 cursor-pointer group"
-  >
-    <div className="flex justify-between items-start mb-4">
-        <div className={`p-3 rounded-2xl ${bgColor} ${textColor} group-hover:scale-110 transition-transform`}>
-            {icon}
-        </div>
-        {trend && (
-             <span className={`text-xs font-medium px-2 py-1 rounded-full ${trendColor}`}>
-                {trend}
-             </span>
-        )}
-    </div>
-    <div>
-      <h4 className="text-3xl font-bold text-slate-800 mb-1">{value}</h4>
-      <p className="text-slate-500 text-sm font-medium">{title}</p>
-    </div>
-  </div>
-);
