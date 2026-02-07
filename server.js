@@ -667,10 +667,38 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
+// --- Keep Alive Mechanism for Render ---
+const keepAlive = () => {
+    // Ping every 14 minutes (Render sleeps after 15 minutes of inactivity)
+    // 14 * 60 * 1000 = 840000 ms
+    const interval = 14 * 60 * 1000; 
+    
+    // Attempt to use the external URL if defined (Render sets this), otherwise localhost
+    // Note: Hitting localhost usually keeps the process active in simple container setups, 
+    // but hitting the public URL is safer if network ingress is the sleep trigger.
+    const url = process.env.RENDER_EXTERNAL_URL 
+        ? `${process.env.RENDER_EXTERNAL_URL}/api/webhook`
+        : `http://127.0.0.1:${PORT}/api/webhook`;
+
+    console.log(`[KeepAlive] Setup: Pinging ${url} every 14 minutes.`);
+
+    setInterval(async () => {
+        try {
+            const response = await fetch(url);
+            console.log(`[KeepAlive] Ping sent to ${url}. Status: ${response.status}`);
+        } catch (error) {
+            console.error(`[KeepAlive] Ping failed: ${error.message}`);
+        }
+    }, interval);
+};
+
 // Listen on all interfaces
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`--------------------------------------------------`);
   console.log(`CRM Server running on port ${PORT}`);
   console.log(`Webhook Endpoint: POST /api/webhook`);
   console.log(`--------------------------------------------------`);
+  
+  // Start the keep-alive loop
+  keepAlive();
 });
