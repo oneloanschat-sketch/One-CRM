@@ -1,0 +1,159 @@
+import React from 'react';
+import { Client } from '../types';
+import { X, ArrowUpRight, FileText } from 'lucide-react';
+
+interface KpiDrillDownModalProps {
+  title: string;
+  clients: Client[];
+  type: 'TOTAL' | 'ACTIVE' | 'VOLUME' | 'DOCS' | 'CREDIT' | 'RATES';
+  onClose: () => void;
+  onClientSelect: (client: Client) => void;
+}
+
+export const KpiDrillDownModal: React.FC<KpiDrillDownModalProps> = ({ title, clients, type, onClose, onClientSelect }) => {
+  
+  // Helper to format date to DD.MM.YYYY
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '-';
+    try {
+      const parts = dateString.split('-');
+      if (parts.length === 3) {
+        return `${parts[2]}.${parts[1]}.${parts[0]}`;
+      }
+      return dateString;
+    } catch (e) {
+      return dateString;
+    }
+  };
+
+  // Helper to format phone to 05X-XXXXXXX
+  const formatPhone = (phone: string) => {
+    if (!phone) return '';
+    // Strip all non-numeric characters
+    const digits = phone.replace(/\D/g, '');
+    
+    // Check if it's a valid Israeli mobile number length (10 digits)
+    if (digits.length === 10 && digits.startsWith('05')) {
+      return `${digits.substring(0, 3)}-${digits.substring(3)}`;
+    }
+    // Fallback for landlines or other lengths if needed, or just return original
+    if (digits.length > 0) return digits;
+    
+    return phone;
+  };
+
+  // Determine which specific value to show in the extra column based on KPI type
+  const getDynamicColumnHeader = () => {
+    switch (type) {
+      case 'VOLUME': return 'סכום שאושר';
+      case 'DOCS': return 'מסמכים לחתימה';
+      case 'CREDIT': return 'דירוג אשראי';
+      case 'ACTIVE': return 'סטטוס נוכחי';
+      default: return 'תאריך הצטרפות';
+    }
+  };
+
+  const getDynamicValue = (client: Client) => {
+    switch (type) {
+      case 'VOLUME': 
+        return <span className="font-bold text-emerald-600">₪{client.requestedAmount.toLocaleString()}</span>;
+      case 'DOCS': 
+        const pendingCount = client.documents.filter(d => !d.isSigned).length;
+        return <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded-md text-xs font-bold">{pendingCount} ממתינים</span>;
+      case 'CREDIT': 
+        return <span className={`font-bold ${client.creditScore > 750 ? 'text-green-600' : 'text-slate-600'}`}>{client.creditScore}</span>;
+      case 'ACTIVE':
+        return <span className="text-blue-600 font-medium text-sm">{client.status}</span>;
+      default: 
+        return <span className="text-slate-500 text-sm font-mono">{formatDate(client.joinedDate)}</span>;
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
+        onClick={onClose}
+      ></div>
+
+      {/* Modal Content */}
+      <div className="relative bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+        {/* Header */}
+        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-800">{title}</h2>
+            <p className="text-slate-500 text-sm mt-1">נמצאו {clients.length} לקוחות רלוונטיים</p>
+          </div>
+          <button 
+            onClick={onClose}
+            className="p-2 bg-white border border-slate-200 rounded-full hover:bg-slate-100 transition-colors text-slate-500"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* List */}
+        <div className="overflow-y-auto p-4 custom-scrollbar">
+          {clients.length === 0 ? (
+            <div className="text-center py-12 text-slate-400">
+              <FileText size={48} className="mx-auto mb-3 opacity-20" />
+              <p>לא נמצאו נתונים להצגה בקטגוריה זו</p>
+            </div>
+          ) : (
+            <div className="grid gap-3">
+               {/* Table Header */}
+               <div className="grid grid-cols-4 px-6 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  <div className="col-span-1">שם הלקוח</div>
+                  <div className="col-span-1">טלפון</div>
+                  <div className="col-span-1 text-left">{getDynamicColumnHeader()}</div>
+                  <div className="col-span-1 text-left">פרטים נוספים</div>
+               </div>
+               
+               {/* Rows */}
+               {clients.map(client => (
+                 <div 
+                   key={client.id} 
+                   onClick={() => onClientSelect(client)}
+                   className="group grid grid-cols-4 items-center p-4 bg-white border border-slate-100 rounded-2xl hover:border-blue-200 hover:shadow-md transition-all duration-200 cursor-pointer"
+                 >
+                    <div className="col-span-1 flex items-center gap-3">
+                       <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
+                          {client.firstName[0]}
+                       </div>
+                       <div>
+                          <p className="font-bold text-slate-800">{client.firstName} {client.lastName}</p>
+                          <p className="text-xs text-slate-400">#{client.id}</p>
+                       </div>
+                    </div>
+                    <div className="col-span-1 text-slate-600 text-sm font-medium font-mono">
+                       {formatPhone(client.phone)}
+                    </div>
+                    <div className="col-span-1 text-left pl-2">
+                       {getDynamicValue(client)}
+                    </div>
+                    <div className="col-span-1 flex justify-end">
+                       <button 
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           onClientSelect(client);
+                         }}
+                         className="flex items-center gap-1 text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-100"
+                       >
+                          לתיק הלקוח <ArrowUpRight size={14} />
+                       </button>
+                    </div>
+                 </div>
+               ))}
+            </div>
+          )}
+        </div>
+        
+        {/* Footer */}
+        <div className="p-4 bg-slate-50 border-t border-slate-100 text-center text-xs text-slate-400">
+           מציג נתונים בזמן אמת מתוך המערכת
+        </div>
+      </div>
+    </div>
+  );
+};
