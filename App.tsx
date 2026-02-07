@@ -6,7 +6,7 @@ import { AddClientForm } from './components/AddClientForm';
 import { IntegrationSettings } from './components/IntegrationSettings';
 import { NotificationCenter } from './components/NotificationCenter';
 import { Client, MortgageStatus, SystemNotification } from './types';
-import { LayoutDashboard, Users, UserPlus, Bot, MessageCircle, Download, Settings, Loader2, Wifi, WifiOff, Menu, X, AlertTriangle } from 'lucide-react';
+import { LayoutDashboard, Users, UserPlus, Bot, MessageCircle, Download, Settings, Loader2, Wifi, WifiOff, Menu, X, AlertTriangle, Home, Percent } from 'lucide-react';
 
 // --- Helpers for Fallback Data ---
 const hoursAgo = (hours: number) => {
@@ -233,7 +233,7 @@ const FALLBACK_CLIENTS: Client[] = [
     monthlyIncome: 15500,
     creditScore: 0,
     joinedDate: daysAgoDate(1),
-    createdAt: hoursAgo(26),
+    createdAt: hoursAgo(26), 
     notes: 'ליד שנשכח, דחוף לטיפול.',
     documents: [],
     reminders: []
@@ -965,13 +965,24 @@ export default function App() {
       >
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center text-white shadow-blue-200 shadow-lg transform rotate-3 transition-transform hover:rotate-0 group shrink-0">
-                <span className="font-black text-2xl italic pr-1 font-serif group-hover:scale-110 transition-transform">1</span>
+             {/* Creative Logo */}
+            <div className="relative w-11 h-11 bg-gradient-to-tr from-blue-700 via-blue-600 to-indigo-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200/50 group overflow-hidden shrink-0">
+                 {/* Abstract Shine */}
+                 <div className="absolute top-0 right-0 w-full h-full bg-white/10 transform rotate-45 translate-x-1/2 -translate-y-1/2"></div>
+                 
+                 {/* Icon Composition */}
+                 <div className="relative z-10 flex items-center justify-center">
+                    <Home size={22} strokeWidth={2.5} className="text-white group-hover:scale-110 transition-transform duration-300" />
+                    <div className="absolute -bottom-1 -right-1 bg-amber-400 rounded-full p-0.5 border-2 border-indigo-600">
+                        <Percent size={8} className="text-indigo-900 font-bold" strokeWidth={4} />
+                    </div>
+                 </div>
             </div>
             <div className="flex flex-col">
                 <h1 className="font-bold text-lg leading-tight text-slate-800">
-                <span className="text-blue-600">וואן</span> משכנתאות
+                <span className="text-blue-600">הסוכנות</span> למשכנתאות
                 </h1>
+                <span className="text-[10px] text-slate-500 font-semibold tracking-wide">המומחים מס' 1 בחברה הערבית</span>
             </div>
           </div>
           {/* Close Button Mobile */}
@@ -1046,11 +1057,18 @@ export default function App() {
         {/* Universal Header (Mobile & Desktop) */}
         <header className="bg-white border-b border-slate-200 p-4 flex items-center justify-between shrink-0 z-20 shadow-sm">
              <div className="flex items-center gap-3 md:hidden">
-                <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg flex items-center justify-center text-white shadow-md">
-                    <span className="font-black text-xl italic pr-0.5 font-serif">1</span>
+                {/* Mobile Logo */}
+                <div className="relative w-9 h-9 bg-gradient-to-tr from-blue-700 via-blue-600 to-indigo-500 rounded-xl flex items-center justify-center text-white shadow-md group overflow-hidden">
+                     <div className="relative z-10 flex items-center justify-center">
+                        <Home size={18} strokeWidth={2.5} className="text-white" />
+                        <div className="absolute -bottom-1 -right-1 bg-amber-400 rounded-full p-[1px] border border-indigo-600">
+                            <Percent size={6} className="text-indigo-900 font-bold" strokeWidth={4} />
+                        </div>
+                     </div>
                 </div>
                 <div>
-                   <div className="font-bold text-blue-900 text-base leading-none">וואן משכנתאות</div>
+                   <div className="font-bold text-blue-900 text-base leading-none">הסוכנות למשכנתאות</div>
+                   <div className="text-[9px] text-slate-500 font-medium leading-none mt-0.5">המומחים מס' 1 בחברה הערבית</div>
                 </div>
              </div>
              

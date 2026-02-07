@@ -59,7 +59,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
 
   const handleDocumentSms = async (doc: Document) => {
     setIsSendingSms(doc.id);
-    const message = `שלום ${client.firstName}, זוהי תזכורת מוואן משכנתאות לגבי חתימה על המסמך: ${doc.name}. אנא היכנס למערכת לחתימה.`;
+    const message = `שלום ${client.firstName}, זוהי תזכורת מהסוכנות למשכנתאות לגבי חתימה על המסמך: ${doc.name}. אנא היכנס למערכת לחתימה.`;
     
     try {
       await sendSms(client.phone, message);
@@ -73,7 +73,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
 
   const handleReminderSms = async (reminder: Reminder) => {
     setIsSendingSms(reminder.id);
-    const message = `שלום ${client.firstName}, תזכורת מוואן משכנתאות: ${reminder.note}`;
+    const message = `שלום ${client.firstName}, תזכורת מהסוכנות למשכנתאות: ${reminder.note}`;
 
     try {
       await sendSms(client.phone, message);

@@ -1,11 +1,34 @@
 import React, { useState } from 'react';
 import { Client, MortgageStatus } from '../types';
-import { Save, X, User, Phone, Mail, DollarSign, Briefcase, FileText } from 'lucide-react';
+import { Save, X, User, Phone, Mail, Briefcase, FileText } from 'lucide-react';
 
 interface AddClientFormProps {
   onSave: (client: Client) => void;
   onCancel: () => void;
 }
+
+// Extracted Component to prevent focus loss on re-render
+const InputGroup = ({ label, icon: Icon, required, ...props }: any) => (
+  <div className="space-y-1.5">
+    <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    <div className="relative group">
+      <div className="absolute top-1/2 -translate-y-1/2 right-3 text-slate-400 group-focus-within:text-blue-500 transition-colors flex items-center justify-center w-5 h-5">
+        {Icon ? <Icon size={18} /> : null}
+      </div>
+      <input
+        {...props}
+        className="w-full pl-3 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-slate-800 placeholder-slate-400 transition-all font-medium"
+      />
+    </div>
+  </div>
+);
+
+// Custom Shekel Icon Component
+const ShekelIcon = () => (
+  <span className="font-bold text-sm text-slate-500">₪</span>
+);
 
 export const AddClientForm: React.FC<AddClientFormProps> = ({ onSave, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -47,23 +70,6 @@ export const AddClientForm: React.FC<AddClientFormProps> = ({ onSave, onCancel }
     onSave(newClient);
   };
 
-  const InputGroup = ({ label, icon: Icon, required, ...props }: any) => (
-    <div className="space-y-1.5">
-      <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      <div className="relative group">
-        <div className="absolute top-1/2 -translate-y-1/2 right-3 text-slate-400 group-focus-within:text-blue-500 transition-colors">
-          <Icon size={18} />
-        </div>
-        <input
-          {...props}
-          className="w-full pl-3 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-slate-800 placeholder-slate-400 transition-all font-medium"
-        />
-      </div>
-    </div>
-  );
-
   return (
     <div className="h-full flex flex-col bg-slate-50 md:p-6 animate-fade-in">
       <div className="flex-1 flex flex-col bg-white md:rounded-2xl shadow-sm border border-slate-100 overflow-hidden max-w-4xl mx-auto w-full">
@@ -98,7 +104,7 @@ export const AddClientForm: React.FC<AddClientFormProps> = ({ onSave, onCancel }
                     type="text"
                     placeholder="לדוגמה: ישראל"
                     value={formData.firstName}
-                    onChange={(e: any) => setFormData({...formData, firstName: e.target.value})}
+                    onChange={(e: any) => setFormData(prev => ({...prev, firstName: e.target.value}))}
                   />
                   <InputGroup
                     label="שם משפחה"
@@ -107,7 +113,7 @@ export const AddClientForm: React.FC<AddClientFormProps> = ({ onSave, onCancel }
                     type="text"
                     placeholder="לדוגמה: ישראלי"
                     value={formData.lastName}
-                    onChange={(e: any) => setFormData({...formData, lastName: e.target.value})}
+                    onChange={(e: any) => setFormData(prev => ({...prev, lastName: e.target.value}))}
                   />
                   <InputGroup
                     label="טלפון נייד"
@@ -118,7 +124,7 @@ export const AddClientForm: React.FC<AddClientFormProps> = ({ onSave, onCancel }
                     className="w-full pl-3 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-slate-800 placeholder-slate-400 transition-all font-medium text-right"
                     placeholder="050-0000000"
                     value={formData.phone}
-                    onChange={(e: any) => setFormData({...formData, phone: e.target.value})}
+                    onChange={(e: any) => setFormData(prev => ({...prev, phone: e.target.value}))}
                   />
                   <InputGroup
                     label="כתובת אימייל"
@@ -128,7 +134,7 @@ export const AddClientForm: React.FC<AddClientFormProps> = ({ onSave, onCancel }
                     className="w-full pl-3 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-slate-800 placeholder-slate-400 transition-all font-medium text-right"
                     placeholder="name@example.com"
                     value={formData.email}
-                    onChange={(e: any) => setFormData({...formData, email: e.target.value})}
+                    onChange={(e: any) => setFormData(prev => ({...prev, email: e.target.value}))}
                   />
                </div>
             </div>
@@ -139,12 +145,12 @@ export const AddClientForm: React.FC<AddClientFormProps> = ({ onSave, onCancel }
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <InputGroup
                     label="סכום משכנתא מבוקש (₪)"
-                    icon={DollarSign}
+                    icon={ShekelIcon}
                     required
                     type="number"
                     placeholder="1500000"
                     value={formData.requestedAmount}
-                    onChange={(e: any) => setFormData({...formData, requestedAmount: e.target.value})}
+                    onChange={(e: any) => setFormData(prev => ({...prev, requestedAmount: e.target.value}))}
                   />
                   <InputGroup
                     label="הכנסה חודשית נטו (₪)"
@@ -152,7 +158,7 @@ export const AddClientForm: React.FC<AddClientFormProps> = ({ onSave, onCancel }
                     type="number"
                     placeholder="15000"
                     value={formData.monthlyIncome}
-                    onChange={(e: any) => setFormData({...formData, monthlyIncome: e.target.value})}
+                    onChange={(e: any) => setFormData(prev => ({...prev, monthlyIncome: e.target.value}))}
                   />
                </div>
             </div>
@@ -168,7 +174,7 @@ export const AddClientForm: React.FC<AddClientFormProps> = ({ onSave, onCancel }
                       className="w-full pl-3 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-slate-800 placeholder-slate-400 transition-all font-medium h-32 resize-none"
                       placeholder="מקור הליד, בקשות מיוחדות, סטטוס משפחתי וכו'..."
                       value={formData.notes}
-                      onChange={e => setFormData({...formData, notes: e.target.value})}
+                      onChange={e => setFormData(prev => ({...prev, notes: e.target.value}))}
                   />
                </div>
             </div>

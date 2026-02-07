@@ -6,7 +6,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 export const analyzeClientRisk = async (client: Client): Promise<string> => {
   try {
     const prompt = `
-      תנתח את הלקוח הבא עבור חברת משכנתאות "וואן משכנתאות".
+      תנתח את הלקוח הבא עבור חברת משכנתאות "הסוכנות למשכנתאות" (המובילה בחברה הערבית).
       
       פרטי הלקוח:
       שם: ${client.firstName} ${client.lastName}
