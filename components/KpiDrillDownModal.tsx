@@ -1,5 +1,5 @@
 import React from 'react';
-import { Client, MortgageStatus } from '../types';
+import { Client } from '../types';
 import { X, ArrowRight, FileText, Phone, Info } from 'lucide-react';
 
 interface KpiDrillDownModalProps {
