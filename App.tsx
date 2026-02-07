@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dashboard } from './components/Dashboard';
 import { ClientList } from './components/ClientList';
 import { ClientDetail } from './components/ClientDetail';
@@ -233,7 +233,7 @@ const FALLBACK_CLIENTS: Client[] = [
     monthlyIncome: 15500,
     creditScore: 0,
     joinedDate: daysAgoDate(1),
-    createdAt: hoursAgo(26), 
+    createdAt: hoursAgo(26),
     notes: 'ליד שנשכח, דחוף לטיפול.',
     documents: [],
     reminders: []
@@ -551,10 +551,6 @@ export default function App() {
 
   const [clients, setClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Scroll Ref (Now used for individual component resets if needed, but less critical with sticky layout)
-  // We can keep it to be safe, but the layout change is the main fix.
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Helper to add notification
   const addSystemNotification = (title: string, message: string, clientId?: string) => {
@@ -982,7 +978,7 @@ export default function App() {
                 <h1 className="font-bold text-lg leading-tight text-slate-800">
                 <span className="text-blue-600">הסוכנות</span> למשכנתאות
                 </h1>
-                <span className="text-[10px] text-slate-500 font-semibold tracking-wide">המומחים מס' 1 בחברה הערבית</span>
+                <span className="text-[10px] text-slate-500 font-semibold tracking-wide">המומחים בחברה הערבית</span>
             </div>
           </div>
           {/* Close Button Mobile */}
@@ -1068,7 +1064,7 @@ export default function App() {
                 </div>
                 <div>
                    <div className="font-bold text-blue-900 text-base leading-none">הסוכנות למשכנתאות</div>
-                   <div className="text-[9px] text-slate-500 font-medium leading-none mt-0.5">המומחים מס' 1 בחברה הערבית</div>
+                   <div className="text-[9px] text-slate-500 font-medium leading-none mt-0.5">המומחים בחברה הערבית</div>
                 </div>
              </div>
              
