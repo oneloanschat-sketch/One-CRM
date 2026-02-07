@@ -155,7 +155,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
   };
 
   return (
-    <div className="p-4 md:p-6 h-full flex flex-col relative pb-20 md:pb-6 overflow-y-auto overflow-x-hidden">
+    <div className="p-4 md:p-6 flex flex-col relative pb-20 md:pb-6">
       {/* Notification Toast */}
       {notification && (
         <div className={`fixed bottom-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-xl shadow-lg z-50 transition-all animate-fade-in flex items-center gap-2 ${notification.type === 'success' ? 'bg-slate-800 text-white' : 'bg-red-500 text-white'}`}>

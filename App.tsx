@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Dashboard } from './components/Dashboard';
 import { ClientList } from './components/ClientList';
 import { ClientDetail } from './components/ClientDetail';
@@ -552,6 +552,16 @@ export default function App() {
   const [clients, setClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Scroll Ref
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Reset scroll when view changes
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTo(0, 0);
+    }
+  }, [currentView, selectedClient]);
+
   // Helper to add notification
   const addSystemNotification = (title: string, message: string, clientId?: string) => {
       const newNotif: SystemNotification = {
@@ -1079,7 +1089,10 @@ export default function App() {
         </header>
 
         {/* Scrollable View Area */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden bg-slate-50 scroll-smooth">
+        <div 
+            ref={scrollContainerRef}
+            className="flex-1 overflow-y-auto overflow-x-hidden bg-slate-50 scroll-smooth"
+        >
            <div className="max-w-7xl mx-auto w-full">
                {renderContent()}
            </div>
