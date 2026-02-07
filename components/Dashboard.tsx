@@ -452,7 +452,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
                     className="hover:opacity-80 cursor-pointer"
                     onClick={handlePipelineClick}
                 >
-                    {pipelineData.map((entry, index) => (
+                    {pipelineData.map((_, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} cursor="pointer" />
                     ))}
                 </Bar>

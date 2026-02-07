@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, Check, Trash2, X } from 'lucide-react';
+import { Bell, Check, Trash2 } from 'lucide-react';
 import { SystemNotification } from '../types';
 
 interface NotificationCenterProps {

@@ -84,9 +84,9 @@ export const ClientList: React.FC<ClientListProps> = ({ clients, onSelectClient,
   ].filter(Boolean).length;
 
   return (
-    <div className="p-4 md:p-6 animate-fade-in pb-20">
+    <div className="p-4 md:p-6 animate-fade-in pb-20 max-w-full overflow-x-hidden">
       <div className="flex flex-col mb-6 gap-4">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 className="text-2xl font-bold text-slate-800 self-start sm:self-auto">ניהול לקוחות</h2>
             
             <div className="flex gap-2 w-full sm:w-auto">
@@ -102,7 +102,7 @@ export const ClientList: React.FC<ClientListProps> = ({ clients, onSelectClient,
               </div>
               <button 
                 onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${showFilters || activeFiltersCount > 0 ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-colors shrink-0 ${showFilters || activeFiltersCount > 0 ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
               >
                 <SlidersHorizontal size={18} />
                 <span className="hidden sm:inline">סינון מתקדם</span>
@@ -118,7 +118,7 @@ export const ClientList: React.FC<ClientListProps> = ({ clients, onSelectClient,
         {/* Advanced Filters Panel */}
         {showFilters && (
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm animate-fade-in-down">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {/* Status Filter */}
                     <div>
                         <label className="text-xs font-semibold text-slate-500 mb-1 block">סטטוס</label>
@@ -259,14 +259,14 @@ export const ClientList: React.FC<ClientListProps> = ({ clients, onSelectClient,
               onClick={() => onSelectClient(client)}
               className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 active:scale-[0.98] transition-transform cursor-pointer relative"
             >
-               <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <h3 className="font-bold text-slate-800 text-lg">{client.firstName} {client.lastName}</h3>
+               <div className="flex justify-between items-start mb-3 gap-2">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-slate-800 text-lg truncate">{client.firstName} {client.lastName}</h3>
                     <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(client.status)}`}>
                       {client.status}
                     </span>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 shrink-0">
                       <button 
                         onClick={(e) => handleDelete(e, client.id)}
                         className="bg-slate-50 p-2 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50"
@@ -280,13 +280,13 @@ export const ClientList: React.FC<ClientListProps> = ({ clients, onSelectClient,
                </div>
                
                <div className="grid grid-cols-2 gap-y-2 text-sm text-slate-600">
-                  <div className="flex items-center gap-2">
-                     <Phone size={14} className="text-slate-400" />
-                     {client.phone}
+                  <div className="flex items-center gap-2 min-w-0">
+                     <Phone size={14} className="text-slate-400 shrink-0" />
+                     <span className="truncate">{client.phone}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                     <Calendar size={14} className="text-slate-400" />
-                     {formatDate(client.joinedDate)}
+                  <div className="flex items-center gap-2 min-w-0">
+                     <Calendar size={14} className="text-slate-400 shrink-0" />
+                     <span className="truncate">{formatDate(client.joinedDate)}</span>
                   </div>
                   <div className="col-span-2 mt-1 pt-2 border-t border-slate-50 flex justify-between items-center">
                      <span className="text-slate-400 text-xs">סכום מבוקש:</span>

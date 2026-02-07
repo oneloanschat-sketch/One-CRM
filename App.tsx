@@ -6,7 +6,7 @@ import { AddClientForm } from './components/AddClientForm';
 import { IntegrationSettings } from './components/IntegrationSettings';
 import { NotificationCenter } from './components/NotificationCenter';
 import { Client, MortgageStatus, SystemNotification } from './types';
-import { LayoutDashboard, Users, LogOut, UserPlus, Bot, MessageCircle, Download, Settings, Loader2, Wifi, WifiOff, Menu, X, AlertTriangle } from 'lucide-react';
+import { LayoutDashboard, Users, UserPlus, Bot, MessageCircle, Download, Settings, Loader2, Wifi, WifiOff, Menu, X, AlertTriangle } from 'lucide-react';
 
 // --- Fallback Data (For Offline Mode) ---
 const FALLBACK_CLIENTS: Client[] = [
