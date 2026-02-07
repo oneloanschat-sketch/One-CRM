@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bot, Link as LinkIcon, Server, Copy, Check, Code, Play, Send, MessageCircle, Zap } from 'lucide-react';
+import { Link as LinkIcon, Server, Copy, Check, Code, Play, Send, MessageCircle, Zap } from 'lucide-react';
 
 interface IntegrationSettingsProps {
     onTestWebhook: (data?: any) => void;
