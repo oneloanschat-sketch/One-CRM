@@ -1,5 +1,5 @@
 import React from 'react';
-import { Client } from '../types';
+import { Client, MortgageStatus } from '../types';
 import { X, ArrowRight, FileText, Phone, Info } from 'lucide-react';
 
 interface KpiDrillDownModalProps {
@@ -53,7 +53,7 @@ export const KpiDrillDownModal: React.FC<KpiDrillDownModalProps> = ({ title, cli
   // Determine which specific value to show in the extra column based on KPI type
   const getDynamicColumnHeader = () => {
     switch (type) {
-      case 'VOLUME': return 'סכום שאושר';
+      case 'VOLUME': return 'סכום מבוקש';
       case 'DOCS': return 'מסמכים לחתימה';
       case 'CREDIT': return 'דירוג אשראי';
       case 'ACTIVE': return 'סטטוס נוכחי';
@@ -65,7 +65,9 @@ export const KpiDrillDownModal: React.FC<KpiDrillDownModalProps> = ({ title, cli
   const getDynamicValue = (client: Client) => {
     switch (type) {
       case 'VOLUME': 
-        return <span className="font-bold text-emerald-600 truncate">₪{client.requestedAmount.toLocaleString()}</span>;
+        // Neutral color for financial values as requested
+        return <span className="font-bold truncate text-slate-800">₪{client.requestedAmount.toLocaleString()}</span>;
+        
       case 'DOCS': 
         const pendingCount = client.documents.filter(d => !d.isSigned).length;
         return <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded-md text-xs font-bold whitespace-nowrap">{pendingCount} ממתינים</span>;

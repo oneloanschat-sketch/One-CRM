@@ -79,6 +79,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
 
   // Color logic: If waiting > 2 hours, it's RED.
   const isWaitTimeCritical = avgWaitTime > 2;
+  const waitingCount = newLeads.length;
 
   const decidedClients = clients.filter(c => c.status === MortgageStatus.APPROVED || c.status === MortgageStatus.REJECTED).length;
   const approvalRate = decidedClients > 0
@@ -180,7 +181,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
         
         if (relevantClients.length > 0) {
             setCustomDrillDown({
-                title: `צנרת פיננסית - ${statusName}`,
+                title: `פירוט תיקים - ${statusName}`,
                 data: relevantClients,
                 type: 'VOLUME'
             });
@@ -319,8 +320,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
         <KpiCard
           title="זמן המתנה ממוצע (ליד חדש)"
           value={formattedWaitTime}
-          trend={isWaitTimeCritical ? 'חריגה ביעד' : 'תקין'}
-          trendColor={isWaitTimeCritical ? 'text-red-600 bg-red-100' : 'text-green-600 bg-green-50'}
+          trend={`${waitingCount} ממתינים לטיפול`}
+          trendColor={isWaitTimeCritical ? 'text-red-600 bg-red-100' : 'text-indigo-600 bg-indigo-50'}
           icon={<Clock className={isWaitTimeCritical ? 'text-red-600' : 'text-indigo-600'} size={24} />}
           bgColor={isWaitTimeCritical ? 'bg-red-50' : 'bg-indigo-50'}
           textColor={isWaitTimeCritical ? 'text-red-600' : 'text-indigo-600'}
