@@ -261,7 +261,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
   const showModal = selectedKpi !== null || customDrillDown !== null;
 
   return (
-    <div className="p-4 md:p-6 space-y-8 animate-fade-in pb-20 relative">
+    <div className="h-full overflow-y-auto custom-scrollbar p-4 md:p-6 space-y-8 animate-fade-in pb-20 relative">
       
       {/* Modal Drill Down */}
       {showModal && (

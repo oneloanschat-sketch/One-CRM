@@ -114,9 +114,9 @@ def send_lead_to_crm(lead_data):
 `;
 
     return (
-        <div className="p-6 space-y-8 animate-fade-in pb-20">
+        <div className="h-full overflow-y-auto custom-scrollbar p-4 md:p-6 space-y-8 animate-fade-in pb-20">
             <div className="flex items-center gap-4 mb-6">
-                <div className="bg-green-100 p-3 rounded-2xl text-green-600">
+                <div className="bg-green-100 p-3 rounded-2xl text-green-600 shadow-sm">
                     <MessageCircle size={32} />
                 </div>
                 <div>
@@ -139,13 +139,13 @@ def send_lead_to_crm(lead_data):
                             זו הכתובת אליה הבוט (או Make/Zapier) צריך לשלוח את המידע.
                         </p>
 
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4 flex items-center justify-between">
-                            <code className="text-sm font-mono text-green-700 break-all px-2" dir="ltr">
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4 flex items-center justify-between group hover:border-blue-300 transition-colors">
+                            <code className="text-sm font-mono text-green-700 break-all px-2 select-all" dir="ltr">
                                 {webhookUrl}
                             </code>
                             <button 
                                 onClick={handleCopyUrl}
-                                className="text-slate-400 hover:text-green-600 shrink-0"
+                                className="text-slate-400 hover:text-green-600 shrink-0 p-2 hover:bg-white rounded-lg transition-all"
                                 title="העתק כתובת"
                             >
                                 {copiedUrl ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
@@ -162,28 +162,28 @@ def send_lead_to_crm(lead_data):
                                     <input 
                                         type="text" 
                                         placeholder="שם פרטי *" 
-                                        className="p-2 border rounded-lg text-sm bg-white"
+                                        className="p-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-green-200 outline-none"
                                         value={manualData.firstName}
                                         onChange={(e) => setManualData({...manualData, firstName: e.target.value})}
                                     />
                                     <input 
                                         type="text" 
                                         placeholder="שם משפחה" 
-                                        className="p-2 border rounded-lg text-sm bg-white"
+                                        className="p-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-green-200 outline-none"
                                         value={manualData.lastName}
                                         onChange={(e) => setManualData({...manualData, lastName: e.target.value})}
                                     />
                                     <input 
                                         type="tel" 
                                         placeholder="טלפון *" 
-                                        className="p-2 border rounded-lg text-sm bg-white"
+                                        className="p-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-green-200 outline-none"
                                         value={manualData.phone}
                                         onChange={(e) => setManualData({...manualData, phone: e.target.value})}
                                     />
                                     <input 
                                         type="number" 
                                         placeholder="סכום מבוקש" 
-                                        className="p-2 border rounded-lg text-sm bg-white"
+                                        className="p-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-green-200 outline-none"
                                         value={manualData.amount}
                                         onChange={(e) => setManualData({...manualData, amount: e.target.value})}
                                     />
@@ -198,7 +198,7 @@ def send_lead_to_crm(lead_data):
                                     <button 
                                         onClick={handleManualSimulate}
                                         disabled={!manualData.firstName || !manualData.phone}
-                                        className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                                     >
                                         <Send size={14} />
                                         שלח ל-CRM
@@ -213,7 +213,7 @@ def send_lead_to_crm(lead_data):
                             <LinkIcon className="text-blue-500" size={24} />
                             <h3 className="text-lg font-bold text-slate-800">מבנה המידע (JSON)</h3>
                         </div>
-                        <div className="bg-slate-900 text-slate-300 p-4 rounded-xl font-mono text-xs md:text-sm" dir="ltr">
+                        <div className="bg-slate-900 text-slate-300 p-4 rounded-xl font-mono text-xs md:text-sm shadow-inner" dir="ltr">
 <pre>{`{
   "firstName": "שם הלקוח",   // (חובה)
   "phone": "050-0000000",   // (חובה - המפתח לזיהוי)
@@ -236,26 +236,26 @@ def send_lead_to_crm(lead_data):
                     <div className="flex gap-2 mb-4 border-b border-slate-100 overflow-x-auto">
                         <button 
                             onClick={() => setActiveTab('whatsapp')}
-                            className={`pb-2 px-4 text-sm font-medium transition-colors whitespace-nowrap flex items-center gap-2 ${activeTab === 'whatsapp' ? 'text-green-600 border-b-2 border-green-600' : 'text-slate-400'}`}
+                            className={`pb-2 px-4 text-sm font-medium transition-colors whitespace-nowrap flex items-center gap-2 ${activeTab === 'whatsapp' ? 'text-green-600 border-b-2 border-green-600' : 'text-slate-400 hover:text-slate-600'}`}
                         >
                             <Zap size={16} />
                             אוטומציה (Make/Zapier)
                         </button>
                         <button 
                             onClick={() => setActiveTab('node')}
-                            className={`pb-2 px-4 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'node' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}
+                            className={`pb-2 px-4 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'node' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
                         >
                             Node.js
                         </button>
                         <button 
                             onClick={() => setActiveTab('python')}
-                            className={`pb-2 px-4 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'python' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}
+                            className={`pb-2 px-4 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'python' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
                         >
                             Python
                         </button>
                     </div>
 
-                    <div className="flex-1 bg-slate-800 rounded-xl overflow-hidden flex flex-col">
+                    <div className="flex-1 bg-slate-800 rounded-xl overflow-hidden flex flex-col shadow-lg shadow-slate-200/50">
                         <div className="flex justify-between items-center px-4 py-2 bg-slate-900 text-slate-400 text-xs">
                              <div className="flex gap-1.5">
                                  <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>

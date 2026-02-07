@@ -98,22 +98,34 @@ export const KpiDrillDownModal: React.FC<KpiDrillDownModalProps> = ({ title, cli
 
       {/* Modal Content */}
       <div className="relative bg-white w-full max-w-4xl rounded-2xl md:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] md:max-h-[85vh]">
-        {/* Header */}
-        <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
-          <div className="min-w-0 flex-1 pr-2">
-            <h2 className="text-lg md:text-2xl font-bold text-slate-800 truncate">{title}</h2>
-            <p className="text-slate-500 text-xs md:text-sm mt-1 truncate">נמצאו {clients.length} לקוחות רלוונטיים</p>
-          </div>
-          <button 
-            onClick={onClose}
-            className="p-2 bg-white border border-slate-200 rounded-full hover:bg-slate-100 transition-colors text-slate-500 shrink-0"
-          >
-            <X size={20} />
-          </button>
+        
+        {/* Header Section */}
+        <div className="bg-white z-20 shrink-0">
+            {/* Title Row */}
+            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <div className="min-w-0 flex-1 pr-2">
+                <h2 className="text-lg md:text-2xl font-bold text-slate-800 truncate">{title}</h2>
+                <p className="text-slate-500 text-xs md:text-sm mt-1 truncate">נמצאו {clients.length} לקוחות רלוונטיים</p>
+              </div>
+              <button 
+                onClick={onClose}
+                className="p-2 bg-white border border-slate-200 rounded-full hover:bg-slate-100 transition-colors text-slate-500 shrink-0"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Column Headers (Fixed - Desktop Only) */}
+            <div className="hidden md:grid grid-cols-4 px-8 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50 border-b border-slate-100">
+                <div className="col-span-1">שם הלקוח</div>
+                <div className="col-span-1">טלפון</div>
+                <div className="col-span-1 text-left">{getDynamicColumnHeader()}</div>
+                <div className="col-span-1 text-left">פרטים נוספים</div>
+             </div>
         </div>
 
-        {/* List */}
-        <div className="overflow-y-auto p-3 md:p-4 custom-scrollbar bg-slate-50/30 flex-1">
+        {/* Scrollable List Area */}
+        <div className="overflow-y-auto custom-scrollbar bg-slate-50/30 flex-1 relative p-3 md:p-4 md:pt-2">
           {clients.length === 0 ? (
             <div className="text-center py-12 text-slate-400">
               <FileText size={48} className="mx-auto mb-3 opacity-20" />
@@ -121,15 +133,8 @@ export const KpiDrillDownModal: React.FC<KpiDrillDownModalProps> = ({ title, cli
             </div>
           ) : (
             <>
-              {/* DESKTOP VIEW (Table) */}
-              <div className="hidden md:block">
-                 <div className="grid grid-cols-4 px-6 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                    <div className="col-span-1">שם הלקוח</div>
-                    <div className="col-span-1">טלפון</div>
-                    <div className="col-span-1 text-left">{getDynamicColumnHeader()}</div>
-                    <div className="col-span-1 text-left">פרטים נוספים</div>
-                 </div>
-                 <div className="grid gap-3">
+              {/* DESKTOP VIEW (Table Rows) */}
+              <div className="hidden md:grid gap-3">
                    {clients.map(client => (
                      <div 
                        key={client.id} 
@@ -164,7 +169,6 @@ export const KpiDrillDownModal: React.FC<KpiDrillDownModalProps> = ({ title, cli
                         </div>
                      </div>
                    ))}
-                 </div>
               </div>
 
               {/* MOBILE VIEW (Cards) */}
@@ -214,7 +218,7 @@ export const KpiDrillDownModal: React.FC<KpiDrillDownModalProps> = ({ title, cli
         </div>
         
         {/* Footer */}
-        <div className="p-4 bg-slate-50 border-t border-slate-100 text-center text-xs text-slate-400 hidden md:block">
+        <div className="p-3 bg-slate-50 border-t border-slate-100 text-center text-xs text-slate-400 hidden md:block shrink-0">
            מציג נתונים בזמן אמת מתוך המערכת
         </div>
       </div>

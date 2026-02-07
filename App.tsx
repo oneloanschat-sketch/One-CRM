@@ -552,15 +552,9 @@ export default function App() {
   const [clients, setClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Scroll Ref
+  // Scroll Ref (Now used for individual component resets if needed, but less critical with sticky layout)
+  // We can keep it to be safe, but the layout change is the main fix.
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  // Reset scroll when view changes
-  useEffect(() => {
-    if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollTo(0, 0);
-    }
-  }, [currentView, selectedClient]);
 
   // Helper to add notification
   const addSystemNotification = (title: string, message: string, clientId?: string) => {
@@ -1088,12 +1082,13 @@ export default function App() {
              </div>
         </header>
 
-        {/* Scrollable View Area */}
-        <div 
-            ref={scrollContainerRef}
-            className="flex-1 overflow-y-auto overflow-x-hidden bg-slate-50 scroll-smooth"
-        >
-           <div className="max-w-7xl mx-auto w-full">
+        {/* 
+            CHANGED SCROLL BEHAVIOR:
+            Old: overflow-y-auto on this container.
+            New: overflow-hidden. Components inside renderContent are responsible for their own internal scrolling.
+        */}
+        <div className="flex-1 overflow-hidden bg-slate-50 relative flex flex-col">
+           <div className="flex-1 h-full w-full max-w-7xl mx-auto flex flex-col overflow-hidden">
                {renderContent()}
            </div>
         </div>
