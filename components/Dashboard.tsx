@@ -331,10 +331,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
                   dataKey="value"
                   onClick={handlePieChartClick}
                   className="cursor-pointer focus:outline-none"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }: any) => `${name} ${(percent ? percent * 100 : 0).toFixed(0)}%`}
                   labelLine={true}
                 >
-                  {statusCounts.map((entry, index) => (
+                  {statusCounts.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} className="hover:opacity-80 transition-opacity" />
                   ))}
                   

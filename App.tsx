@@ -5,7 +5,7 @@ import { ClientDetail } from './components/ClientDetail';
 import { AddClientForm } from './components/AddClientForm';
 import { IntegrationSettings } from './components/IntegrationSettings';
 import { Client, MortgageStatus } from './types';
-import { LayoutDashboard, Users, LogOut, UserPlus, Bot, MessageCircle, Download, Settings, Loader2 } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, UserPlus, Bot, MessageCircle, Download, Settings, Loader2, Wifi, WifiOff } from 'lucide-react';
 
 // --- Fallback Data (For Offline Mode) ---
 const FALLBACK_CLIENTS: Client[] = [
@@ -384,6 +384,11 @@ export default function App() {
         </nav>
 
         <div className="p-4 border-t border-slate-100 space-y-2">
+           <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${isOfflineMode ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>
+              {isOfflineMode ? <WifiOff size={14} /> : <Wifi size={14} />}
+              {isOfflineMode ? 'מצב לא מקוון (Offline)' : 'מחובר לשרת בענן'}
+           </div>
+
            <button 
              onClick={handleExportData}
              className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 text-slate-600 hover:text-blue-600 transition-colors"
