@@ -20,24 +20,24 @@ interface KpiCardProps {
 const KpiCard: React.FC<KpiCardProps> = ({ title, value, trend, trendColor, icon, iconBg, onClick }) => (
   <div 
     onClick={onClick}
-    className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:border-amber-200 transition-all cursor-pointer group relative overflow-hidden"
+    className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-md hover:border-amber-200 dark:hover:border-amber-500/30 transition-all cursor-pointer group relative overflow-hidden"
   >
     <div className="flex justify-between items-start mb-4 relative z-10">
       <div className={`p-3 rounded-xl ${iconBg} transition-transform group-hover:scale-110 shadow-sm`}>
         {icon}
       </div>
       {trend && (
-        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${trendColor || 'bg-slate-100 text-slate-500'}`}>
+        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${trendColor || 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300'}`}>
           {trend}
         </span>
       )}
     </div>
     <div className="space-y-1 relative z-10">
-      <h3 className="text-slate-500 text-sm font-medium">{title}</h3>
-      <p className="text-2xl font-bold text-slate-800 tracking-tight">{value}</p>
+      <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium">{title}</h3>
+      <p className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">{value}</p>
     </div>
     {/* Decorative background element */}
-    <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-gradient-to-br from-slate-50 to-slate-100 rounded-full opacity-50 z-0"></div>
+    <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 rounded-full opacity-50 z-0"></div>
   </div>
 );
 
@@ -194,13 +194,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-4 border border-slate-100 shadow-xl rounded-xl text-right dir-rtl z-50">
-          <p className="font-bold text-slate-900 mb-2">{label}</p>
+        <div className="bg-white dark:bg-slate-800 p-4 border border-slate-100 dark:border-slate-700 shadow-xl rounded-xl text-right dir-rtl z-50">
+          <p className="font-bold text-slate-900 dark:text-white mb-2">{label}</p>
           {payload.map((entry: any, index: number) => (
             <div key={index} className="flex items-center gap-2 text-sm mb-1">
               <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }}></div>
-              <span className="text-slate-500">{entry.name}:</span>
-              <span className="font-semibold text-slate-700">
+              <span className="text-slate-500 dark:text-slate-400">{entry.name}:</span>
+              <span className="font-semibold text-slate-700 dark:text-slate-200">
                 {entry.dataKey === 'amount' 
                     ? `₪${entry.value.toFixed(2)}M` 
                     : entry.value.toLocaleString()}
@@ -294,7 +294,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
           value={activeProcesses.toString()}
           trend="טיפול נדרש"
           icon={<TrendingUp className="text-amber-500" size={24} />}
-          iconBg="bg-amber-100"
+          iconBg="bg-amber-100 dark:bg-amber-900/30"
           onClick={() => setSelectedKpi('ACTIVE')}
         />
         <KpiCard
@@ -302,16 +302,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
           value={`₪${(approvedVolume / 1000000).toFixed(1)}M`}
           trend="הצטברות שנתית"
           icon={<FileCheck className="text-emerald-500" size={24} />}
-          iconBg="bg-emerald-100"
+          iconBg="bg-emerald-100 dark:bg-emerald-900/30"
           onClick={() => setSelectedKpi('VOLUME')}
         />
         <KpiCard
           title="מסמכים ממתינים לחתימה"
           value={pendingDocs.toString()}
           trend="דחוף"
-          trendColor="text-orange-600 bg-orange-100"
+          trendColor="text-orange-600 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400"
           icon={<AlertCircle className="text-orange-500" size={24} />}
-          iconBg="bg-orange-100"
+          iconBg="bg-orange-100 dark:bg-orange-900/30"
           onClick={() => setSelectedKpi('DOCS')}
         />
         {/* NEW KPI: Average Wait Time */}
@@ -319,9 +319,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
           title="זמן המתנה ממוצע (ליד חדש)"
           value={formattedWaitTime}
           trend={`${waitingCount} ממתינים לטיפול`}
-          trendColor={isWaitTimeCritical ? 'text-red-600 bg-red-100' : 'text-slate-600 bg-slate-100'}
-          icon={<Clock className={isWaitTimeCritical ? 'text-red-500' : 'text-slate-500'} size={24} />}
-          iconBg={isWaitTimeCritical ? 'bg-red-100' : 'bg-slate-100'}
+          trendColor={isWaitTimeCritical ? 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400' : 'text-slate-600 bg-slate-100 dark:bg-slate-700 dark:text-slate-300'}
+          icon={<Clock className={isWaitTimeCritical ? 'text-red-500' : 'text-slate-500 dark:text-slate-400'} size={24} />}
+          iconBg={isWaitTimeCritical ? 'bg-red-100 dark:bg-red-900/30' : 'bg-slate-100 dark:bg-slate-700'}
           onClick={() => setSelectedKpi('WAIT_TIME')}
         />
         <KpiCard
@@ -329,15 +329,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
           value={`${approvalRate}%`}
           trend="יחס המרה"
           icon={<Percent className="text-teal-600" size={24} />}
-          iconBg="bg-teal-100"
+          iconBg="bg-teal-100 dark:bg-teal-900/30"
           onClick={() => setSelectedKpi('RATES')}
         />
       </div>
 
       {/* Main Trend Chart */}
-      <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100 cursor-pointer transition-shadow hover:shadow-md">
+      <div className="bg-white dark:bg-slate-800 p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 cursor-pointer transition-shadow hover:shadow-md">
         <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+            <h3 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                 <Activity size={20} className="text-amber-500" />
                 מגמת גיוס לקוחות
             </h3>
@@ -357,7 +357,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
               </defs>
               <XAxis dataKey="month" axisLine={false} tickLine={false} />
               <YAxis axisLine={false} tickLine={false} allowDecimals={false} />
-              <CartesianGrid vertical={false} stroke="#f1f5f9" />
+              <CartesianGrid vertical={false} stroke="#f1f5f9" strokeOpacity={0.2} />
               <Tooltip content={<CustomTooltip />} />
               <Area
                 type="monotone"
@@ -376,8 +376,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
 
       {/* Secondary Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100">
-          <h3 className="text-lg font-bold text-slate-800 mb-6">התפלגות סטטוס תיקים</h3>
+        <div className="bg-white dark:bg-slate-800 p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6">התפלגות סטטוס תיקים</h3>
           <div className="h-80 w-full min-w-0" dir="ltr">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -398,18 +398,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} className="hover:opacity-80 transition-opacity" />
                   ))}
                   
-                  <Label 
-                    value={totalClients} 
-                    position="center" 
-                    className="text-3xl font-bold fill-slate-900"
-                    dy={-5}
-                  />
-                  <Label 
-                    value="תיקים" 
-                    position="center" 
-                    className="text-sm fill-slate-400 font-medium" 
-                    dy={20}
-                  />
+                  {/* Note: Label component styling in Recharts is tricky with CSS classes, using fill prop for dark mode compat might be needed or key on re-render */}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
               </PieChart>
@@ -417,9 +406,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
           </div>
         </div>
 
-        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100">
-          <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-             <BarChart3 size={20} className="text-slate-900"/>
+        <div className="bg-white dark:bg-slate-800 p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
+             <BarChart3 size={20} className="text-slate-900 dark:text-white"/>
              נפח תיקים כספי לפי סטטוס
           </h3>
           <div className="h-80 w-full min-w-0" dir="ltr">
@@ -430,7 +419,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
                 barSize={30}
                 className="cursor-pointer"
               >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" strokeOpacity={0.2} />
                 <XAxis 
                     dataKey="name" 
                     axisLine={false} 

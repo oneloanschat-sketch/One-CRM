@@ -158,8 +158,8 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
     <div className="flex flex-col h-full relative animate-fade-in">
       {/* Notification Toast */}
       {notification && (
-        <div className={`fixed bottom-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-xl shadow-lg z-50 transition-all animate-fade-in flex items-center gap-2 ${notification.type === 'success' ? 'bg-slate-900 text-white' : 'bg-red-600 text-white'}`}>
-          {notification.type === 'success' ? <CheckCircle size={18} className="text-green-400" /> : <XCircle size={18} />}
+        <div className={`fixed bottom-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-xl shadow-lg z-50 transition-all animate-fade-in flex items-center gap-2 ${notification.type === 'success' ? 'bg-slate-900 text-white dark:bg-emerald-600' : 'bg-red-600 text-white'}`}>
+          {notification.type === 'success' ? <CheckCircle size={18} className="text-green-400 dark:text-white" /> : <XCircle size={18} />}
           <span className="font-medium text-sm">{notification.message}</span>
         </div>
       )}
@@ -169,7 +169,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
         <div className="flex flex-row justify-between items-center gap-3">
             <button 
                 onClick={onBack} 
-                className="flex items-center text-slate-500 hover:text-slate-800 transition-colors group px-2 py-1.5 rounded-lg hover:bg-slate-100"
+                className="flex items-center text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors group px-2 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
             >
                 <ArrowRight size={18} className="ml-1 group-hover:mr-1 transition-all" />
                 <span className="font-bold text-base">חזרה</span>
@@ -177,7 +177,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
 
             <button 
                 onClick={handleDeleteClient}
-                className="group flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-200 shadow-sm"
+                className="group flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-200 shadow-sm"
                 title="מחק תיק לקוח לצמיתות"
             >
                 <Trash2 size={16} className="group-hover:scale-110 transition-transform" />
@@ -190,13 +190,13 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-6">
             {/* Left Side: Main Info */}
             <div className="lg:col-span-2 space-y-5">
-            <div className="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-100">
+            <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
                 {/* Header: Name + Status - Compact Layout */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
                     <div className="min-w-0 w-full md:w-auto">
                         <div className="flex items-center gap-2">
-                             <h1 className="text-2xl font-bold text-slate-900 truncate leading-tight">{client.firstName} {client.lastName}</h1>
-                             <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md font-mono">#{client.id}</span>
+                             <h1 className="text-2xl font-bold text-slate-900 dark:text-white truncate leading-tight">{client.firstName} {client.lastName}</h1>
+                             <span className="text-xs bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 px-2 py-0.5 rounded-md font-mono">#{client.id}</span>
                         </div>
                     </div>
                     <div className="w-full md:w-auto">
@@ -205,7 +205,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
                             <select 
                                 value={client.status}
                                 onChange={(e) => changeStatus(e.target.value as MortgageStatus)}
-                                className="w-full md:w-40 bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-lg focus:ring-amber-500 focus:border-amber-500 block p-2 font-bold cursor-pointer hover:bg-slate-100 transition-colors appearance-none"
+                                className="w-full md:w-40 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-sm rounded-lg focus:ring-amber-500 focus:border-amber-500 block p-2 font-bold cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors appearance-none"
                             >
                                 {Object.values(MortgageStatus).map(s => <option key={s} value={s}>{s}</option>)}
                             </select>
@@ -218,47 +218,47 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
 
                 {/* Client Details Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 mb-4">
-                    <div className="flex items-center p-2.5 bg-slate-50 rounded-lg min-w-0 border border-transparent hover:border-slate-200 transition-colors">
-                        <div className="bg-slate-200 p-1.5 rounded-full ml-2 text-slate-600 shrink-0"><Phone size={16}/></div>
+                    <div className="flex items-center p-2.5 bg-slate-50 dark:bg-slate-700/50 rounded-lg min-w-0 border border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-colors">
+                        <div className="bg-slate-200 dark:bg-slate-700 p-1.5 rounded-full ml-2 text-slate-600 dark:text-slate-300 shrink-0"><Phone size={16}/></div>
                         <div className="min-w-0 truncate">
-                            <span className="text-[10px] text-slate-400 block font-semibold uppercase">טלפון</span>
-                            <span className="truncate block font-medium text-slate-700 text-sm" dir="ltr">{client.phone}</span>
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500 block font-semibold uppercase">טלפון</span>
+                            <span className="truncate block font-medium text-slate-700 dark:text-slate-200 text-sm" dir="ltr">{client.phone}</span>
                         </div>
                     </div>
-                    <div className="flex items-center p-2.5 bg-slate-50 rounded-lg min-w-0 border border-transparent hover:border-slate-200 transition-colors">
-                        <div className="bg-slate-200 p-1.5 rounded-full ml-2 text-slate-600 shrink-0"><Mail size={16}/></div>
+                    <div className="flex items-center p-2.5 bg-slate-50 dark:bg-slate-700/50 rounded-lg min-w-0 border border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-colors">
+                        <div className="bg-slate-200 dark:bg-slate-700 p-1.5 rounded-full ml-2 text-slate-600 dark:text-slate-300 shrink-0"><Mail size={16}/></div>
                         <div className="min-w-0 truncate">
-                            <span className="text-[10px] text-slate-400 block font-semibold uppercase">אימייל</span>
-                            <span className="truncate block font-medium text-slate-700 text-sm">{client.email || '-'}</span>
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500 block font-semibold uppercase">אימייל</span>
+                            <span className="truncate block font-medium text-slate-700 dark:text-slate-200 text-sm">{client.email || '-'}</span>
                         </div>
                     </div>
-                    <div className="flex items-center p-2.5 bg-slate-50 rounded-lg min-w-0 border border-transparent hover:border-slate-200 transition-colors">
-                        <div className="bg-amber-100 p-1.5 rounded-full ml-2 text-amber-600 shrink-0"><DollarSign size={16}/></div>
+                    <div className="flex items-center p-2.5 bg-slate-50 dark:bg-slate-700/50 rounded-lg min-w-0 border border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-colors">
+                        <div className="bg-amber-100 dark:bg-amber-900/30 p-1.5 rounded-full ml-2 text-amber-600 dark:text-amber-400 shrink-0"><DollarSign size={16}/></div>
                         <div className="min-w-0 truncate">
-                            <span className="text-[10px] text-slate-400 block font-semibold uppercase">סכום מבוקש</span>
-                            <span className="truncate block font-medium text-slate-700 text-sm">₪{client.requestedAmount.toLocaleString()}</span>
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500 block font-semibold uppercase">סכום מבוקש</span>
+                            <span className="truncate block font-medium text-slate-700 dark:text-slate-200 text-sm">₪{client.requestedAmount.toLocaleString()}</span>
                         </div>
                     </div>
-                    <div className="flex items-center p-2.5 bg-slate-50 rounded-lg min-w-0 border border-transparent hover:border-slate-200 transition-colors">
-                        <div className="bg-slate-200 p-1.5 rounded-full ml-2 text-slate-600 shrink-0"><Calendar size={16}/></div>
+                    <div className="flex items-center p-2.5 bg-slate-50 dark:bg-slate-700/50 rounded-lg min-w-0 border border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-colors">
+                        <div className="bg-slate-200 dark:bg-slate-700 p-1.5 rounded-full ml-2 text-slate-600 dark:text-slate-300 shrink-0"><Calendar size={16}/></div>
                         <div className="min-w-0 truncate">
-                            <span className="text-[10px] text-slate-400 block font-semibold uppercase">תאריך הצטרפות</span>
-                            <span className="truncate block font-medium text-slate-700 text-sm">{client.joinedDate}</span>
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500 block font-semibold uppercase">תאריך הצטרפות</span>
+                            <span className="truncate block font-medium text-slate-700 dark:text-slate-200 text-sm">{client.joinedDate}</span>
                         </div>
                     </div>
                 </div>
 
                 {/* AI Section */}
-                <div className="border-t border-slate-100 pt-4">
+                <div className="border-t border-slate-100 dark:border-slate-700 pt-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 gap-3">
-                    <h3 className="text-sm font-bold flex items-center gap-2 text-slate-800">
+                    <h3 className="text-sm font-bold flex items-center gap-2 text-slate-800 dark:text-white">
                     <Wand2 size={16} className="text-amber-500"/>
                     ניתוח AI חכם
                     </h3>
                     <button 
                     onClick={handleGenerateInsight}
                     disabled={isLoadingAi}
-                    className="w-full sm:w-auto bg-slate-900 text-white hover:bg-slate-800 border border-transparent px-4 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 justify-center"
+                    className="w-full sm:w-auto bg-slate-900 dark:bg-slate-700 text-white hover:bg-slate-800 dark:hover:bg-slate-600 border border-transparent px-4 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 justify-center"
                     >
                     {isLoadingAi ? 'מנתח נתונים...' : (
                         <>
@@ -270,30 +270,30 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
                 </div>
                 
                 {aiAnalysis && (
-                    <div className="bg-amber-50 p-3 rounded-xl text-slate-800 text-xs md:text-sm leading-relaxed border border-amber-100 animate-fade-in shadow-inner">
+                    <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-xl text-slate-800 dark:text-slate-200 text-xs md:text-sm leading-relaxed border border-amber-100 dark:border-amber-900/40 animate-fade-in shadow-inner">
                     {aiAnalysis}
                     </div>
                 )}
                 </div>
             </div>
 
-            <div className="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-100">
+            <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
                 {/* Tabs */}
-                <div className="border-b border-slate-100 mb-5 flex gap-5 overflow-x-auto pb-1 scrollbar-hide">
+                <div className="border-b border-slate-100 dark:border-slate-700 mb-5 flex gap-5 overflow-x-auto pb-1 scrollbar-hide">
                     <button 
-                    className={`pb-2 font-bold transition-colors border-b-2 whitespace-nowrap text-sm ${activeTab === 'details' ? 'border-amber-500 text-slate-900' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                    className={`pb-2 font-bold transition-colors border-b-2 whitespace-nowrap text-sm ${activeTab === 'details' ? 'border-amber-500 text-slate-900 dark:text-white' : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
                     onClick={() => setActiveTab('details')}
                     >
                     הערות ותהליך
                     </button>
                     <button 
-                    className={`pb-2 font-bold transition-colors border-b-2 whitespace-nowrap text-sm ${activeTab === 'documents' ? 'border-amber-500 text-slate-900' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                    className={`pb-2 font-bold transition-colors border-b-2 whitespace-nowrap text-sm ${activeTab === 'documents' ? 'border-amber-500 text-slate-900 dark:text-white' : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
                     onClick={() => setActiveTab('documents')}
                     >
                     מסמכים ({client.documents.length})
                     </button>
                     <button 
-                    className={`pb-2 font-bold transition-colors border-b-2 whitespace-nowrap flex items-center gap-2 text-sm ${activeTab === 'reminders' ? 'border-amber-500 text-slate-900' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                    className={`pb-2 font-bold transition-colors border-b-2 whitespace-nowrap flex items-center gap-2 text-sm ${activeTab === 'reminders' ? 'border-amber-500 text-slate-900 dark:text-white' : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
                     onClick={() => setActiveTab('reminders')}
                     >
                     <Bell size={14} />
@@ -303,9 +303,9 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
 
                 {activeTab === 'details' && (
                     <div className="animate-fade-in">
-                    <label className="block text-xs font-bold text-slate-700 mb-2">הערות יועץ</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">הערות יועץ</label>
                     <textarea 
-                        className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none text-slate-800 bg-slate-50 h-40 resize-none text-sm transition-all"
+                        className="w-full p-3 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none text-slate-800 dark:text-white bg-slate-50 dark:bg-slate-700 h-40 resize-none text-sm transition-all"
                         defaultValue={client.notes}
                         onBlur={(e) => onUpdateClient({...client, notes: e.target.value})}
                         placeholder="כתוב הערות חשובות על התיק כאן..."
@@ -316,14 +316,14 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
                 {activeTab === 'documents' && (
                     <div className="space-y-2 animate-fade-in">
                     {client.documents.map(doc => (
-                        <div key={doc.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-2.5 border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors gap-3 group">
+                        <div key={doc.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-2.5 border border-slate-100 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors gap-3 group">
                             <div className="flex items-center gap-3 min-w-0">
-                            <div className={`p-2 rounded-lg shrink-0 ${doc.isSigned ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
+                            <div className={`p-2 rounded-lg shrink-0 ${doc.isSigned ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
                                 <FileText size={18} />
                             </div>
                             <div className="min-w-0">
-                                <p className="font-bold text-slate-800 text-xs md:text-sm truncate">{doc.name}</p>
-                                <p className="text-[10px] text-slate-400 truncate">{doc.uploadDate} • {doc.type}</p>
+                                <p className="font-bold text-slate-800 dark:text-slate-200 text-xs md:text-sm truncate">{doc.name}</p>
+                                <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">{doc.uploadDate} • {doc.type}</p>
                             </div>
                             </div>
                             <div className="flex items-center gap-2 self-end sm:self-auto w-full sm:w-auto justify-end opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
@@ -332,14 +332,14 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
                                 onClick={() => handleDocumentSms(doc)}
                                 disabled={isSendingSms === doc.id}
                                 title="שלח תזכורת SMS ללקוח"
-                                className="p-1.5 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors disabled:opacity-50"
+                                className="p-1.5 text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg transition-colors disabled:opacity-50"
                                 >
                                 <MessageSquare size={16} className={isSendingSms === doc.id ? 'animate-pulse' : ''} />
                                 </button>
                             )}
                             <button 
                                 onClick={() => toggleDocSign(doc.id)}
-                                className={`px-2.5 py-1 rounded-lg text-[10px] md:text-xs font-bold transition-colors whitespace-nowrap shadow-sm ${doc.isSigned ? 'bg-emerald-500 text-white hover:bg-emerald-600' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}`}
+                                className={`px-2.5 py-1 rounded-lg text-[10px] md:text-xs font-bold transition-colors whitespace-nowrap shadow-sm ${doc.isSigned ? 'bg-emerald-500 text-white hover:bg-emerald-600' : 'bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600'}`}
                             >
                                 {doc.isSigned ? 'נחתם' : 'סמן כנחתם'}
                             </button>
@@ -348,7 +348,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
                     ))}
                     <div 
                         onClick={handleFileClick}
-                        className="mt-3 border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center text-slate-400 hover:border-amber-300 hover:bg-amber-50 transition-all cursor-pointer group"
+                        className="mt-3 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-6 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:border-amber-300 dark:hover:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-all cursor-pointer group"
                     >
                         <input 
                             type="file" 
@@ -356,10 +356,10 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
                             className="hidden" 
                             onChange={handleFileChange}
                         />
-                        <div className="bg-slate-100 p-2 rounded-full mb-2 group-hover:bg-amber-100 group-hover:text-amber-600 transition-colors">
+                        <div className="bg-slate-100 dark:bg-slate-700 p-2 rounded-full mb-2 group-hover:bg-amber-100 dark:group-hover:bg-amber-900/30 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
                              <Upload size={20} />
                         </div>
-                        <span className="text-xs font-bold group-hover:text-amber-600">לחץ להעלאת מסמך חדש</span>
+                        <span className="text-xs font-bold group-hover:text-amber-600 dark:group-hover:text-amber-400">לחץ להעלאת מסמך חדש</span>
                     </div>
                     </div>
                 )}
@@ -367,8 +367,8 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
                 {activeTab === 'reminders' && (
                 <div className="space-y-4 animate-fade-in">
                     {/* Add Reminder Form */}
-                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                    <h4 className="text-xs font-bold text-slate-800 mb-2 flex items-center gap-2">
+                    <div className="bg-slate-50 dark:bg-slate-700/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <h4 className="text-xs font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">
                         <Plus size={14} /> הוסף תזכורת חדשה
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
@@ -376,7 +376,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
                         <input 
                             type="text" 
                             placeholder="מה צריך לעשות?" 
-                            className="w-full p-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white text-slate-800"
+                            className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
                             value={newReminderText}
                             onChange={(e) => setNewReminderText(e.target.value)}
                         />
@@ -384,7 +384,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
                         <div>
                         <input 
                             type="date" 
-                            className="w-full p-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white text-slate-800"
+                            className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
                             value={newReminderDate}
                             onChange={(e) => setNewReminderDate(e.target.value)}
                         />
@@ -392,7 +392,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
                         <div>
                         <input 
                             type="time" 
-                            className="w-full p-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white text-slate-800"
+                            className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
                             value={newReminderTime}
                             onChange={(e) => setNewReminderTime(e.target.value)}
                         />
@@ -402,7 +402,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
                         <button 
                         onClick={addReminder}
                         disabled={!newReminderDate || !newReminderTime || !newReminderText}
-                        className="w-full sm:w-auto bg-slate-900 text-white px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                        className="w-full sm:w-auto bg-slate-900 dark:bg-slate-600 text-white px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-800 dark:hover:bg-slate-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                         >
                         שמור תזכורת
                         </button>
@@ -412,7 +412,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
                     {/* Reminder List */}
                     <div className="space-y-2">
                     {getSortedReminders().length === 0 ? (
-                        <div className="text-center py-8 text-slate-400">
+                        <div className="text-center py-8 text-slate-400 dark:text-slate-500">
                         אין תזכורות פעילות ללקוח זה.
                         </div>
                     ) : (
@@ -421,8 +421,8 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
                             key={reminder.id} 
                             className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 border rounded-xl transition-all gap-2 ${
                             reminder.isCompleted 
-                                ? 'bg-slate-50 border-slate-100 opacity-60' 
-                                : 'bg-white border-slate-200 shadow-sm hover:shadow-md'
+                                ? 'bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-700/50 opacity-60' 
+                                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md'
                             }`}
                         >
                             <div className="flex items-start sm:items-center gap-3 w-full">
@@ -430,34 +430,34 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
                                 onClick={() => toggleReminder(reminder.id)}
                                 className={`p-1.5 rounded-full transition-colors shrink-0 mt-0.5 sm:mt-0 ${
                                 reminder.isCompleted 
-                                    ? 'bg-emerald-100 text-emerald-600' 
-                                    : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' 
+                                    : 'bg-slate-100 dark:bg-slate-700 text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'
                                 }`}
                             >
                                 <CheckCircle size={16} />
                             </button>
                             <div className="min-w-0 flex-1">
-                                <p className={`font-bold text-sm break-words ${reminder.isCompleted ? 'text-slate-500 line-through' : 'text-slate-800'}`}>
+                                <p className={`font-bold text-sm break-words ${reminder.isCompleted ? 'text-slate-500 line-through' : 'text-slate-800 dark:text-slate-200'}`}>
                                 {reminder.note}
                                 </p>
-                                <div className="flex items-center gap-3 text-[10px] text-slate-400 mt-1 font-medium">
+                                <div className="flex items-center gap-3 text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium">
                                    <span className="flex items-center gap-1"><Calendar size={10} /> {reminder.dueDate}</span>
                                    <span className="flex items-center gap-1"><Clock size={10} /> {reminder.dueTime}</span>
                                 </div>
                             </div>
                             </div>
-                            <div className="flex items-center gap-2 self-end sm:self-auto border-t sm:border-t-0 border-slate-50 pt-2 sm:pt-0 w-full sm:w-auto justify-end">
+                            <div className="flex items-center gap-2 self-end sm:self-auto border-t sm:border-t-0 border-slate-50 dark:border-slate-700 pt-2 sm:pt-0 w-full sm:w-auto justify-end">
                             <button 
                                 onClick={() => handleReminderSms(reminder)}
                                 disabled={isSendingSms === reminder.id}
                                 title="שלח הודעה ללקוח ב-SMS"
-                                className="text-blue-500 bg-blue-50 hover:bg-blue-100 p-1.5 rounded-lg transition-colors disabled:opacity-50"
+                                className="text-blue-500 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 p-1.5 rounded-lg transition-colors disabled:opacity-50"
                             >
                                 <MessageSquare size={16} className={isSendingSms === reminder.id ? 'animate-pulse' : ''} />
                             </button>
                             <button 
                                 onClick={() => deleteReminder(reminder.id)}
-                                className="text-red-400 bg-red-50 hover:text-red-500 hover:bg-red-100 p-1.5 rounded-lg transition-colors"
+                                className="text-red-400 bg-red-50 dark:bg-red-900/30 hover:text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 p-1.5 rounded-lg transition-colors"
                             >
                                 <Trash2 size={16} />
                             </button>
@@ -473,7 +473,7 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
 
             {/* Right Side: Quick Stats / Summary (Bottom on Mobile) */}
             <div className="space-y-5">
-            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-5 rounded-2xl shadow-xl shadow-slate-300 relative overflow-hidden border border-slate-700">
+            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 dark:from-slate-800 dark:via-slate-900 dark:to-slate-950 text-white p-5 rounded-2xl shadow-xl shadow-slate-300 dark:shadow-slate-900 relative overflow-hidden border border-slate-700 dark:border-slate-800">
                 <div className="absolute -top-10 -left-10 w-32 h-32 bg-amber-500 opacity-20 rounded-full blur-3xl"></div>
                 <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-blue-500 opacity-20 rounded-full blur-3xl"></div>
                 
@@ -497,22 +497,22 @@ export const ClientDetail: React.FC<ClientDetailProps> = ({ client, onBack, onUp
                 </div>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-                <h3 className="font-bold text-slate-800 mb-4 text-sm">ציר זמן תהליך</h3>
-                <div className="relative border-r-2 border-slate-100 mr-2 space-y-6 py-1">
+            <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                <h3 className="font-bold text-slate-800 dark:text-white mb-4 text-sm">ציר זמן תהליך</h3>
+                <div className="relative border-r-2 border-slate-100 dark:border-slate-700 mr-2 space-y-6 py-1">
                     <div className="relative mr-6">
-                    <div className="absolute -right-[33px] top-1 w-5 h-5 rounded-full bg-emerald-500 border-4 border-white shadow-sm"></div>
-                    <h4 className="text-xs font-bold text-slate-800">פתיחת תיק</h4>
+                    <div className="absolute -right-[33px] top-1 w-5 h-5 rounded-full bg-emerald-500 border-4 border-white dark:border-slate-800 shadow-sm"></div>
+                    <h4 className="text-xs font-bold text-slate-800 dark:text-white">פתיחת תיק</h4>
                     <p className="text-[10px] text-slate-400 mt-0.5 font-mono">{client.joinedDate}</p>
                     </div>
                     <div className="relative mr-6">
-                    <div className={`absolute -right-[33px] top-1 w-5 h-5 rounded-full border-4 border-white shadow-sm ${client.status !== MortgageStatus.NEW ? 'bg-emerald-500' : 'bg-slate-200'}`}></div>
-                    <h4 className={`text-xs font-bold ${client.status !== MortgageStatus.NEW ? 'text-slate-800' : 'text-slate-400'}`}>איסוף מסמכים</h4>
+                    <div className={`absolute -right-[33px] top-1 w-5 h-5 rounded-full border-4 border-white dark:border-slate-800 shadow-sm ${client.status !== MortgageStatus.NEW ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-600'}`}></div>
+                    <h4 className={`text-xs font-bold ${client.status !== MortgageStatus.NEW ? 'text-slate-800 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}>איסוף מסמכים</h4>
                     <p className="text-[10px] text-slate-400 mt-0.5">{client.status !== MortgageStatus.NEW ? 'הושלם' : 'ממתין לביצוע'}</p>
                     </div>
                     <div className="relative mr-6">
-                    <div className={`absolute -right-[33px] top-1 w-5 h-5 rounded-full border-4 border-white shadow-sm ${client.status === MortgageStatus.APPROVED ? 'bg-emerald-500' : 'bg-slate-200'}`}></div>
-                    <h4 className={`text-xs font-bold ${client.status === MortgageStatus.APPROVED ? 'text-slate-800' : 'text-slate-400'}`}>אישור עקרוני</h4>
+                    <div className={`absolute -right-[33px] top-1 w-5 h-5 rounded-full border-4 border-white dark:border-slate-800 shadow-sm ${client.status === MortgageStatus.APPROVED ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-600'}`}></div>
+                    <h4 className={`text-xs font-bold ${client.status === MortgageStatus.APPROVED ? 'text-slate-800 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}>אישור עקרוני</h4>
                     <p className="text-[10px] text-slate-400 mt-0.5">{client.status === MortgageStatus.APPROVED ? 'התקבל' : 'ממתין לאישור'}</p>
                     </div>
                 </div>
