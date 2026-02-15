@@ -13,18 +13,17 @@ interface KpiCardProps {
   trend: string;
   trendColor?: string;
   icon: React.ReactNode;
-  bgColor: string;
-  textColor: string;
+  iconBg: string;
   onClick: () => void;
 }
 
-const KpiCard: React.FC<KpiCardProps> = ({ title, value, trend, trendColor, icon, bgColor, textColor, onClick }) => (
+const KpiCard: React.FC<KpiCardProps> = ({ title, value, trend, trendColor, icon, iconBg, onClick }) => (
   <div 
     onClick={onClick}
-    className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all cursor-pointer group"
+    className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:border-amber-200 transition-all cursor-pointer group relative overflow-hidden"
   >
-    <div className="flex justify-between items-start mb-4">
-      <div className={`p-3 rounded-xl ${bgColor} group-hover:scale-110 transition-transform`}>
+    <div className="flex justify-between items-start mb-4 relative z-10">
+      <div className={`p-3 rounded-xl ${iconBg} transition-transform group-hover:scale-110 shadow-sm`}>
         {icon}
       </div>
       {trend && (
@@ -33,10 +32,12 @@ const KpiCard: React.FC<KpiCardProps> = ({ title, value, trend, trendColor, icon
         </span>
       )}
     </div>
-    <div className="space-y-1">
+    <div className="space-y-1 relative z-10">
       <h3 className="text-slate-500 text-sm font-medium">{title}</h3>
-      <p className={`text-2xl font-bold ${textColor}`}>{value}</p>
+      <p className="text-2xl font-bold text-slate-800 tracking-tight">{value}</p>
     </div>
+    {/* Decorative background element */}
+    <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-gradient-to-br from-slate-50 to-slate-100 rounded-full opacity-50 z-0"></div>
   </div>
 );
 
@@ -45,7 +46,8 @@ interface DashboardProps {
   onClientSelect: (client: Client) => void;
 }
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+// Navy, Gold, Emerald, Red, Slate
+const COLORS = ['#0f172a', '#f59e0b', '#10b981', '#ef4444', '#64748b'];
 
 type KpiType = 'TOTAL' | 'ACTIVE' | 'VOLUME' | 'DOCS' | 'WAIT_TIME' | 'RATES' | null;
 
@@ -125,7 +127,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
     value: clients.filter(c => c.status === status).length
   })).filter(item => item.value > 0);
 
-  // 3. Financial Pipeline (Volume by Status) - REPLACED CHART
+  // 3. Financial Pipeline (Volume by Status)
   const pipelineData = Object.values(MortgageStatus).map(status => {
     const totalAmount = clients
         .filter(c => c.status === status)
@@ -193,7 +195,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-4 border border-slate-100 shadow-xl rounded-xl text-right dir-rtl z-50">
-          <p className="font-bold text-slate-800 mb-2">{label}</p>
+          <p className="font-bold text-slate-900 mb-2">{label}</p>
           {payload.map((entry: any, index: number) => (
             <div key={index} className="flex items-center gap-2 text-sm mb-1">
               <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }}></div>
@@ -283,37 +285,33 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
           title="סה״כ לקוחות"
           value={totalClients.toString()}
           trend="צפה בכולם"
-          icon={<Users className="text-blue-600" size={24} />}
-          bgColor="bg-blue-50"
-          textColor="text-blue-600"
+          icon={<Users className="text-white" size={24} />}
+          iconBg="bg-slate-900"
           onClick={() => setSelectedKpi('TOTAL')}
         />
         <KpiCard
           title="תיקים פעילים"
           value={activeProcesses.toString()}
           trend="טיפול נדרש"
-          icon={<TrendingUp className="text-emerald-600" size={24} />}
-          bgColor="bg-emerald-50"
-          textColor="text-emerald-600"
+          icon={<TrendingUp className="text-amber-500" size={24} />}
+          iconBg="bg-amber-100"
           onClick={() => setSelectedKpi('ACTIVE')}
         />
         <KpiCard
           title="נפח עסקאות שאושר"
           value={`₪${(approvedVolume / 1000000).toFixed(1)}M`}
           trend="הצטברות שנתית"
-          icon={<FileCheck className="text-purple-600" size={24} />}
-          bgColor="bg-purple-50"
-          textColor="text-purple-600"
+          icon={<FileCheck className="text-emerald-500" size={24} />}
+          iconBg="bg-emerald-100"
           onClick={() => setSelectedKpi('VOLUME')}
         />
         <KpiCard
           title="מסמכים ממתינים לחתימה"
           value={pendingDocs.toString()}
           trend="דחוף"
-          trendColor="text-orange-500 bg-orange-100"
-          icon={<AlertCircle className="text-orange-600" size={24} />}
-          bgColor="bg-orange-50"
-          textColor="text-orange-600"
+          trendColor="text-orange-600 bg-orange-100"
+          icon={<AlertCircle className="text-orange-500" size={24} />}
+          iconBg="bg-orange-100"
           onClick={() => setSelectedKpi('DOCS')}
         />
         {/* NEW KPI: Average Wait Time */}
@@ -321,10 +319,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
           title="זמן המתנה ממוצע (ליד חדש)"
           value={formattedWaitTime}
           trend={`${waitingCount} ממתינים לטיפול`}
-          trendColor={isWaitTimeCritical ? 'text-red-600 bg-red-100' : 'text-indigo-600 bg-indigo-50'}
-          icon={<Clock className={isWaitTimeCritical ? 'text-red-600' : 'text-indigo-600'} size={24} />}
-          bgColor={isWaitTimeCritical ? 'bg-red-50' : 'bg-indigo-50'}
-          textColor={isWaitTimeCritical ? 'text-red-600' : 'text-indigo-600'}
+          trendColor={isWaitTimeCritical ? 'text-red-600 bg-red-100' : 'text-slate-600 bg-slate-100'}
+          icon={<Clock className={isWaitTimeCritical ? 'text-red-500' : 'text-slate-500'} size={24} />}
+          iconBg={isWaitTimeCritical ? 'bg-red-100' : 'bg-slate-100'}
           onClick={() => setSelectedKpi('WAIT_TIME')}
         />
         <KpiCard
@@ -332,8 +329,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
           value={`${approvalRate}%`}
           trend="יחס המרה"
           icon={<Percent className="text-teal-600" size={24} />}
-          bgColor="bg-teal-50"
-          textColor="text-teal-600"
+          iconBg="bg-teal-100"
           onClick={() => setSelectedKpi('RATES')}
         />
       </div>
@@ -342,8 +338,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
       <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100 cursor-pointer transition-shadow hover:shadow-md">
         <div className="flex justify-between items-center mb-6">
             <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                <Activity size={20} className="text-blue-500" />
-                מגמת גיוס לקוחות (לפי חודשי הצטרפות)
+                <Activity size={20} className="text-amber-500" />
+                מגמת גיוס לקוחות
             </h3>
         </div>
         <div className="h-64 w-full min-w-0" dir="ltr">
@@ -355,8 +351,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
             >
               <defs>
                 <linearGradient id="colorLeads" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#0f172a" stopOpacity={0.1}/>
+                  <stop offset="95%" stopColor="#0f172a" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <XAxis dataKey="month" axisLine={false} tickLine={false} />
@@ -367,11 +363,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
                 type="monotone"
                 dataKey="leads"
                 name="לקוחות חדשים"
-                stroke="#3b82f6"
+                stroke="#0f172a"
                 strokeWidth={3}
                 fillOpacity={1}
                 fill="url(#colorLeads)"
-                activeDot={{ r: 8 }}
+                activeDot={{ r: 8, fill: "#f59e0b" }}
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -405,7 +401,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
                   <Label 
                     value={totalClients} 
                     position="center" 
-                    className="text-3xl font-bold fill-slate-800"
+                    className="text-3xl font-bold fill-slate-900"
                     dy={-5}
                   />
                   <Label 
@@ -423,7 +419,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
 
         <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100">
           <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-             <BarChart3 size={20} className="text-purple-600"/>
+             <BarChart3 size={20} className="text-slate-900"/>
              נפח תיקים כספי לפי סטטוס
           </h3>
           <div className="h-80 w-full min-w-0" dir="ltr">
@@ -447,7 +443,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ clients, onClientSelect })
                 <Legend iconType="circle" verticalAlign="top" height={36}/>
                 <Bar 
                     dataKey="amount" 
-                    fill="#8b5cf6" 
+                    fill="#0f172a" 
                     name="סכום (במיליוני ₪)" 
                     radius={[6, 6, 0, 0]} 
                     className="hover:opacity-80 cursor-pointer"

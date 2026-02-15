@@ -6,7 +6,7 @@ import { AddClientForm } from './components/AddClientForm';
 import { IntegrationSettings } from './components/IntegrationSettings';
 import { NotificationCenter } from './components/NotificationCenter';
 import { Client, MortgageStatus, SystemNotification } from './types';
-import { LayoutDashboard, Users, UserPlus, Bot, MessageCircle, Download, Settings, Loader2, Wifi, WifiOff, Menu, X, AlertTriangle, Home, Percent } from 'lucide-react';
+import { LayoutDashboard, Users, UserPlus, Bot, MessageCircle, Download, Settings, Loader2, Wifi, WifiOff, Menu, X, AlertTriangle, Home, Key, TrendingUp, BarChart3 } from 'lucide-react';
 
 // --- Helpers for Fallback Data ---
 const hoursAgo = (hours: number) => {
@@ -233,7 +233,7 @@ const FALLBACK_CLIENTS: Client[] = [
     monthlyIncome: 15500,
     creditScore: 0,
     joinedDate: daysAgoDate(1),
-    createdAt: hoursAgo(26),
+    createdAt: hoursAgo(26), 
     notes: 'ליד שנשכח, דחוף לטיפול.',
     documents: [],
     reminders: []
@@ -517,15 +517,35 @@ const FALLBACK_CLIENTS: Client[] = [
 const SidebarItem = ({ icon, label, isActive, onClick }: { icon: React.ReactNode, label: string, isActive: boolean, onClick: () => void }) => (
   <button 
     onClick={onClick}
-    className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
+    className={`w-full flex items-center gap-3 p-3 transition-all duration-200 border-r-4 ${
       isActive 
-        ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm' 
-        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+        ? 'bg-slate-800 text-amber-400 border-amber-400 font-semibold' 
+        : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border-transparent'
     }`}
   >
     {icon}
     <span>{label}</span>
   </button>
+);
+
+// Recreated Logo Component based on User Image (House + Key + 1992)
+const BrandLogo = ({ className = "" }: { className?: string }) => (
+  <div className={`relative flex flex-col items-center justify-center ${className}`}>
+     <div className="relative w-16 h-16 flex items-center justify-center">
+         {/* House Roof & Frame */}
+         <Home className="text-slate-900 w-full h-full stroke-[1.5]" />
+         
+         {/* Gold Key Inside */}
+         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-[40%]">
+             <Key className="text-amber-500 w-8 h-8 rotate-90" strokeWidth={2.5} />
+         </div>
+
+         {/* 1992 Text at bottom */}
+         <div className="absolute -bottom-1 bg-white px-1">
+             <span className="text-[10px] font-bold text-slate-900 tracking-widest">1992</span>
+         </div>
+     </div>
+  </div>
 );
 
 enum View {
@@ -586,7 +606,6 @@ export default function App() {
         // Smart Lead Detection
         if (silent && data.length > clients.length && clients.length > 0) {
             const newCount = data.length - clients.length;
-            // Assuming new clients are added to the beginning (unshift on server)
             const newLeads = data.slice(0, newCount);
             
             newLeads.forEach(lead => {
@@ -627,12 +646,11 @@ export default function App() {
     if (isOfflineMode) return;
     
     const intervalId = setInterval(() => {
-        // Silent fetch to check updates
         fetchClients(true);
     }, 30000); 
 
     return () => clearInterval(intervalId);
-  }, [isOfflineMode, clients]); // Use 'clients' dependency to compare lengths inside fetchClients
+  }, [isOfflineMode, clients]);
 
   // --- URL Query Param Listener ---
   useEffect(() => {
@@ -706,28 +724,24 @@ export default function App() {
     }
   };
 
-  // Step 1: Request Delete (Opens Modal)
   const handleDeleteRequest = (clientId: string) => {
       setClientToDeleteId(clientId);
   };
 
-  // Step 2: Confirm Delete (Executes Action)
   const executeDeleteClient = async () => {
     if (!clientToDeleteId) return;
 
     const clientId = clientToDeleteId;
     const clientToDelete = clients.find(c => c.id === clientId);
     
-    // Optimistic delete
     setClients(prev => prev.filter(c => c.id !== clientId));
 
-    // If we are viewing the deleted client, go back to list
     if (selectedClient && selectedClient.id === clientId) {
         setSelectedClient(null);
         setCurrentView(View.CLIENTS);
     }
 
-    setClientToDeleteId(null); // Close modal
+    setClientToDeleteId(null);
     showNotification(`הלקוח ${clientToDelete?.firstName || ''} נמחק בהצלחה`);
 
     if (!isOfflineMode) {
@@ -746,7 +760,6 @@ export default function App() {
     setClients(prev => [newClient, ...prev]);
     
     if (fromLink) {
-        // Notification is added via fetch logic if persistent, but here it's immediate
         addSystemNotification('ליד חדש (קישור)', `נקלט לקוח: ${newClient.firstName} ${newClient.lastName}`, newClient.id);
         showNotification(`✅ נקלט ליד חדש: ${newClient.firstName} ${newClient.lastName}`);
         setCurrentView(View.CLIENTS);
@@ -798,8 +811,6 @@ export default function App() {
         };
     }
 
-    console.log('Simulating webhook...', payload);
-
     let success = false;
     
     if (!isOfflineMode) {
@@ -812,7 +823,7 @@ export default function App() {
             if (res.ok) {
                 success = true;
                 showNotification(customData ? `✅ נשלח בהצלחה!` : `🤖 הבוט שלח ליד!`);
-                fetchClients(true); // Silent fetch to trigger notification logic
+                fetchClients(true);
             }
         } catch (e) {
             console.warn('Webhook server unreachable');
@@ -864,7 +875,7 @@ export default function App() {
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center h-full text-slate-400">
-                <Loader2 size={48} className="animate-spin mb-4 text-blue-500" />
+                <Loader2 size={48} className="animate-spin mb-4 text-amber-500" />
                 <p>טוען נתונים...</p>
             </div>
         );
@@ -903,8 +914,8 @@ export default function App() {
     <div className="flex h-screen bg-slate-50 text-slate-800 font-sans overflow-hidden" dir="rtl">
       {/* Toast Notification */}
       {notification && (
-        <div className="fixed top-6 left-6 z-[70] bg-slate-800 text-white px-6 py-4 rounded-xl shadow-2xl animate-bounce-in flex items-center gap-3 max-w-[90vw] cursor-pointer" onClick={() => setNotification(null)}>
-          <MessageCircle className="text-green-400 shrink-0" />
+        <div className="fixed top-6 left-6 z-[70] bg-slate-900 text-white px-6 py-4 rounded-xl shadow-2xl animate-bounce-in flex items-center gap-3 max-w-[90vw] cursor-pointer" onClick={() => setNotification(null)}>
+          <MessageCircle className="text-amber-400 shrink-0" />
           <div>
             <p className="font-semibold text-sm">עדכון מערכת</p>
             <p className="text-sm opacity-90">{notification}</p>
@@ -953,44 +964,30 @@ export default function App() {
         ></div>
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - Rebranded to Navy/Gold */}
       <aside 
-        className={`fixed inset-y-0 right-0 z-30 w-64 bg-white border-l border-slate-200 flex flex-col shadow-2xl transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:shadow-lg ${
+        className={`fixed inset-y-0 right-0 z-30 w-64 bg-slate-900 border-l border-slate-800 flex flex-col shadow-2xl transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:shadow-lg ${
           isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-             {/* Creative Logo */}
-            <div className="relative w-11 h-11 bg-gradient-to-tr from-blue-700 via-blue-600 to-indigo-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200/50 group overflow-hidden shrink-0">
-                 {/* Abstract Shine */}
-                 <div className="absolute top-0 right-0 w-full h-full bg-white/10 transform rotate-45 translate-x-1/2 -translate-y-1/2"></div>
-                 
-                 {/* Icon Composition */}
-                 <div className="relative z-10 flex items-center justify-center">
-                    <Home size={22} strokeWidth={2.5} className="text-white group-hover:scale-110 transition-transform duration-300" />
-                    <div className="absolute -bottom-1 -right-1 bg-amber-400 rounded-full p-0.5 border-2 border-indigo-600">
-                        <Percent size={8} className="text-indigo-900 font-bold" strokeWidth={4} />
-                    </div>
-                 </div>
-            </div>
-            <div className="flex flex-col">
-                <h1 className="font-bold text-lg leading-tight text-slate-800">
-                <span className="text-blue-600">הסוכנות</span> למשכנתאות
+        <div className="p-6 border-b border-slate-800 flex flex-col items-center gap-4 text-center">
+             <BrandLogo />
+             <div>
+                <h1 className="font-bold text-lg leading-tight text-white tracking-wide">
+                אדמתנו <span className="text-amber-400">ביתנו</span>
                 </h1>
-                <span className="text-[10px] text-slate-500 font-semibold tracking-wide">המומחים בחברה הערבית</span>
+                <span className="text-[10px] text-slate-400 font-semibold tracking-wide">משכנתאות ופיננסים</span>
             </div>
-          </div>
-          {/* Close Button Mobile */}
-          <button 
-            className="md:hidden text-slate-400 hover:text-slate-600 p-1"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            <X size={24} />
-          </button>
+            {/* Close Button Mobile */}
+             <button 
+                className="md:hidden absolute top-4 left-4 text-slate-400 hover:text-white"
+                onClick={() => setIsMobileMenuOpen(false)}
+            >
+                <X size={24} />
+            </button>
         </div>
 
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        <nav className="flex-1 py-6 space-y-1 overflow-y-auto">
           <SidebarItem 
             icon={<LayoutDashboard size={20} />} 
             label="דשבורד ראשי" 
@@ -1015,34 +1012,31 @@ export default function App() {
             isActive={currentView === View.SETTINGS} 
             onClick={() => handleNavigation(View.SETTINGS)} 
           />
-          
-          <div className="pt-6 mt-6 border-t border-slate-100">
-             <p className="text-xs font-semibold text-slate-400 px-3 mb-2">סימולציות ואינטגרציות</p>
-             <button 
+        </nav>
+
+        <div className="p-4 border-t border-slate-800 space-y-3 bg-slate-900">
+           <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border ${isOfflineMode ? 'bg-red-900/20 text-red-400 border-red-900/50' : 'bg-emerald-900/20 text-emerald-400 border-emerald-900/50'}`}>
+              {isOfflineMode ? <WifiOff size={14} /> : <Wifi size={14} />}
+              {isOfflineMode ? 'מצב לא מקוון' : 'מחובר לשרת'}
+           </div>
+           
+           <button 
                onClick={() => {
                    simulateBotWebhook();
                    if (window.innerWidth < 768) setIsMobileMenuOpen(false);
                }}
-               className="w-full flex items-center gap-3 p-3 rounded-xl text-green-600 hover:bg-green-50 transition-all duration-200"
+               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition-all text-xs font-medium border border-slate-700"
              >
-               <Bot size={20} />
-               <span>הדמיית ליד מהבוט</span>
+               <Bot size={16} />
+               <span>סימולציית בוט</span>
              </button>
-          </div>
-        </nav>
-
-        <div className="p-4 border-t border-slate-100 space-y-2 bg-slate-50/50">
-           <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${isOfflineMode ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>
-              {isOfflineMode ? <WifiOff size={14} /> : <Wifi size={14} />}
-              {isOfflineMode ? 'מצב לא מקוון' : 'מחובר לשרת'}
-           </div>
 
            <button 
              onClick={handleExportData}
-             className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 text-slate-600 hover:text-blue-600 transition-colors"
+             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-amber-500/10 text-slate-400 hover:text-amber-400 border border-transparent hover:border-amber-500/30 transition-colors text-xs font-medium"
            >
-             <Download size={18} />
-             <span className="text-sm font-medium">שמור/ייצא נתונים</span>
+             <Download size={16} />
+             <span>שמירת נתונים</span>
            </button>
         </div>
       </aside>
@@ -1050,27 +1044,20 @@ export default function App() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-full overflow-hidden relative bg-slate-50">
         
-        {/* Universal Header (Mobile & Desktop) */}
-        <header className="bg-white border-b border-slate-200 p-4 flex items-center justify-between shrink-0 z-20 shadow-sm">
+        {/* Universal Header */}
+        <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shrink-0 z-20 shadow-sm">
              <div className="flex items-center gap-3 md:hidden">
-                {/* Mobile Logo */}
-                <div className="relative w-9 h-9 bg-gradient-to-tr from-blue-700 via-blue-600 to-indigo-500 rounded-xl flex items-center justify-center text-white shadow-md group overflow-hidden">
-                     <div className="relative z-10 flex items-center justify-center">
-                        <Home size={18} strokeWidth={2.5} className="text-white" />
-                        <div className="absolute -bottom-1 -right-1 bg-amber-400 rounded-full p-[1px] border border-indigo-600">
-                            <Percent size={6} className="text-indigo-900 font-bold" strokeWidth={4} />
-                        </div>
-                     </div>
+                <div className="w-8 h-8 flex items-center justify-center bg-slate-900 rounded-lg">
+                    <Home className="text-white w-4 h-4" />
                 </div>
                 <div>
-                   <div className="font-bold text-blue-900 text-base leading-none">הסוכנות למשכנתאות</div>
-                   <div className="text-[9px] text-slate-500 font-medium leading-none mt-0.5">המומחים בחברה הערבית</div>
+                   <div className="font-bold text-slate-900 text-base leading-none">אדמתנו ביתנו</div>
                 </div>
              </div>
              
-             {/* Desktop Title / Breadcrumb (Visible on MD+) */}
+             {/* Desktop Title */}
              <div className="hidden md:block">
-                <h2 className="text-lg font-bold text-slate-800">
+                <h2 className="text-xl font-bold text-slate-800">
                     {currentView === View.DASHBOARD && 'סקירת מצב כללית'}
                     {currentView === View.CLIENTS && 'רשימת לקוחות'}
                     {currentView === View.CLIENT_DETAIL && 'תיק לקוח'}
@@ -1079,7 +1066,7 @@ export default function App() {
                 </h2>
              </div>
 
-             <div className="flex items-center gap-3">
+             <div className="flex items-center gap-4">
                 <NotificationCenter 
                     notifications={notifications}
                     unreadCount={unreadCount}
@@ -1096,11 +1083,6 @@ export default function App() {
              </div>
         </header>
 
-        {/* 
-            CHANGED SCROLL BEHAVIOR:
-            Old: overflow-y-auto on this container.
-            New: overflow-hidden. Components inside renderContent are responsible for their own internal scrolling.
-        */}
         <div className="flex-1 overflow-hidden bg-slate-50 relative flex flex-col">
            <div className="flex-1 h-full w-full max-w-7xl mx-auto flex flex-col overflow-hidden">
                {renderContent()}
